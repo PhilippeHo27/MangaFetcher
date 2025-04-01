@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manga Tracker</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <header>
+        <h1>Manga Tracker</h1>
+    </header>
+
+    <main>
+        <section class="card add-manga-section">
+            <h2>Add New Manga</h2>
+            <form id="add-manga-form">
+                <div class="form-group">
+                    <label for="manga-name">Name:</label>
+                    <input type="text" id="manga-name" name="manga-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="manga-url">Source URL:</label>
+                    <input type="url" id="manga-url" name="manga-url" placeholder="e.g., https://mangadex.org/title/..." required>
+                </div>
+                <div class="form-group">
+                    <label for="manga-selector">Selector (CSS or XPath):</label>
+                    <input type="text" id="manga-selector" name="manga-selector" placeholder="e.g., .latest-chapter a" required>
+                </div>
+                <div class="form-group selector-type">
+                     <label>Selector Type:</label>
+                     <div>
+                        <input type="radio" id="selector-css" name="selector-type" value="css" checked>
+                        <label for="selector-css">CSS</label>
+                     </div>
+                     <div>
+                         <input type="radio" id="selector-xpath" name="selector-type" value="xpath">
+                         <label for="selector-xpath">XPath</label>
+                     </div>
+                </div>
+                <button type="submit" class="btn">Add Manga</button>
+                 <p class="note">Note: Adding via UI requires manual script run or backend integration to persist.</p>
+            </form>
+        </section>
+
+        <section class="card manga-list-section">
+            <h2>Tracked Manga</h2>
+            <div class="table-container">
+                 <button id="refresh-button" class="btn refresh-btn">Refresh List</button>
+                 <table id="manga-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Latest Chapter</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="manga-table-body">
+                        <!-- Rows will be populated by JavaScript -->
+                         <tr><td colspan="4">Loading manga data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+             <p class="note">Marking read/unread via UI requires manual script run or backend integration to persist.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>Manga Tracker - Neo-Brutalist Style</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
