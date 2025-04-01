@@ -52,20 +52,34 @@
                     <thead>
                         <tr>
                             <th>Title</th>
-                            <th>Latest Chapter</th>
+                            <th>Source</th>
+                            <th>Latest Chapters</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="manga-table-body">
                         <!-- Rows will be populated by JavaScript -->
-                         <tr><td colspan="4">Loading manga data...</td></tr>
+                         <tr><td colspan="5">Loading manga data...</td></tr>
                     </tbody>
                 </table>
             </div>
              <p class="note">Marking read/unread via UI requires manual script run or backend integration to persist.</p>
         </section>
     </main>
+
+    <template id="manga-row-template">
+        <tr>
+            <td class="manga-title"></td>
+            <td class="manga-source"><a></a></td>
+            <td class="manga-chapters"></td>
+            <td class="manga-status"></td>
+            <td class="manga-actions">
+                <button class="btn btn-small btn-mark-read">Mark Read</button>
+                <button class="btn btn-small btn-clear" style="margin-left: 5px;">Clear Old</button>
+            </td>
+        </tr>
+    </template>
 
     <footer>
         <p>Manga Tracker - Neo-Brutalist Style</p>

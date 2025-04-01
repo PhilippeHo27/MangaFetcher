@@ -1,17 +1,22 @@
-name: Update Manga Chapters
+name: Manga Data Workflow
 
 on:
   schedule:
     # Runs daily at 02:00 UTC
     - cron: '0 2 * * *'
+  push:
+    paths:
+      - 'data/pending_changes.json' # Trigger on changes to pending file
   workflow_dispatch: # Allows manual triggering
 
 jobs:
   update:
+    name: Daily Chapter Update
     runs-on: ubuntu-latest
+    # Only run schedule/dispatch triggers on this job
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     permissions:
-      # Give the default GITHUB_TOKEN write permission to commit and push the changed files.
-      contents: write
+      contents: write # Needed to commit chapter updates
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -19,7 +24,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x' # Use a recent Python 3 version
+          python-version: '3.x'
 
       - name: Install dependencies
         run: |
@@ -29,14 +34,50 @@ jobs:
       - name: Run manga update script
         run: python backend/MangaScraper.py update
 
-      - name: Commit and push changes
+      - name: Commit and push chapter updates
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'Automated daily manga chapter update'
-          # Optional: specify the file pattern to commit
-          file_pattern: 'data/manga_chapters.json' 
-          # Optional: specify the branch to commit to, defaults to the current branch
-          # branch: main
+          file_pattern: 'data/manga_chapters.json' # Only commit chapter data
+          commit_user_name: GitHub Actions Bot
+          commit_user_email: actions@github.com
+          commit_author: GitHub Actions Bot <actions@github.com>
+
+  process_pending:
+    name: Process Pending Additions
+    runs-on: ubuntu-latest
+    # Only run push triggers on this job
+    if: github.event_name == 'push'
+    permissions:
+      contents: write # Needed to commit processed sources/chapters and clear pending file
+    steps:
+      - name: Checkout repository
+        # Need to checkout the specific ref that triggered the workflow
+        uses: actions/checkout@v4
+        with:
+           ref: ${{ github.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Process pending changes
+        # This script should add manga to sources.json and potentially chapters.json
+        # AND clear pending_changes.json
+        run: python backend/process_changes.py
+
+      - name: Commit processed changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'Process pending manga additions'
+          # Commit changes to sources, chapters, and the (now empty) pending file
+          file_pattern: 'data/manga_sources.json data/manga_chapters.json data/pending_changes.json'
           commit_user_name: GitHub Actions Bot
           commit_user_email: actions@github.com
           commit_author: GitHub Actions Bot <actions@github.com>

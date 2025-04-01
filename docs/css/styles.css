@@ -124,14 +124,14 @@ main {
 .btn:hover, .btn:focus {
     background-color: var(--secondary-color);
     color: var(--primary-color);
-    transform: translate(-2px, -2px);
-    box-shadow: var(--button-hover-shadow);
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0px var(--accent-color);
     outline: none;
 }
 
 .btn:active {
-    transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0px var(--border-color);
+    transform: translate(0px, 0px);
+    box-shadow: 2px 2px 0px var(--border-color);
 }
 
 .refresh-btn {
