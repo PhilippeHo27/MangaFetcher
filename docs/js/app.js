@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to render manga data in the table
     function renderMangaTable(mangaData) {
         mangaTableBody.innerHTML = ''; // Clear existing rows
+        const readStatuses = loadReadStatuses(); // Load read statuses from local storage
 
         if (!mangaData || mangaData.length === 0) {
             mangaTableBody.innerHTML = '<tr><td colspan="4">No manga tracked yet, or data file is empty/invalid. Add one above or run the update script.</td></tr>';
@@ -49,29 +50,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
         mangaData.forEach(manga => {
             const row = document.createElement('tr');
+            const isRead = readStatuses[manga.id] || false; // Get read status for this manga ID
+
             // Add 'is-read' class if manga is read
-            if (manga.isRead) {
+            if (isRead) {
                 row.classList.add('is-read');
             }
             row.dataset.mangaId = manga.id; // Store manga ID on the row
 
-            const latestChapter = manga.latestChapter || {}; // Handle cases where latestChapter might be null/undefined
-            const chapterText = latestChapter.text || 'N/A';
-            const chapterUrl = latestChapter.url;
+            const chapterText = manga.latest_chapter_text || 'N/A';
+            const chapterUrl = manga.latest_chapter_url;
+            const sourceUrl = manga.source_url; // Get the source URL
+            const lastScraped = manga.last_scraped_at ? new Date(manga.last_scraped_at).toLocaleString() : 'Never';
 
             row.innerHTML = `
-                <td>${manga.title || 'N/A'}</td>
+                <td>${manga.name || 'N/A'}</td>
                 <td>
                     ${chapterUrl ? 
                         `<a href="${chapterUrl}" target="_blank" rel="noopener noreferrer">${chapterText}</a>` : 
                         chapterText
                     }
-                    ${manga.lastUpdated ? `<br><small>Checked: ${new Date(manga.lastUpdated).toLocaleString()}</small>` : ''}
+                    <br><small>Checked: ${lastScraped}</small>
                 </td>
-                <td>${manga.isRead ? 'Read' : 'Unread'}</td>
+                <td>
+                     ${sourceUrl ? 
+                        `<a href="${sourceUrl}" target="_blank" rel="noopener noreferrer">Source Page</a>` : 
+                        'N/A'
+                     }
+                </td>
                 <td>
                     <button class="btn btn-read" data-id="${manga.id}">
-                        ${manga.isRead ? 'Mark Unread' : 'Mark Read'}
+                        ${isRead ? 'Mark Unread' : 'Mark Read'}
                     </button>
                 </td>
             `;
@@ -340,3 +349,9 @@ document.addEventListener('DOMContentLoaded', () => {
         githubTokenInput.value = savedToken;
     }
 });
+
+// Helper function to load read statuses from localStorage
+function loadReadStatuses() {
+    const readStatuses = localStorage.getItem('readStatuses');
+    return readStatuses ? JSON.parse(readStatuses) : {};
+}
