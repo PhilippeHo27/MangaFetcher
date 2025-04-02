@@ -97,8 +97,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const selectorType = selectorTypeInput.value;
 
+        const token = githubTokenInput.value.trim();
+        if (!token) {
+            tokenErrorMessage.textContent = 'GitHub token is required to add manga.';
+            return;
+        }
         if (!name || !url || !selector) {
-            alert('Please fill in all fields.');
+            tokenErrorMessage.textContent = 'Manga Name, URL, and Selector are required.'; // Use the same error div for general errors
             return;
         }
 
@@ -112,17 +117,110 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         console.log('Attempting to add (UI only):', newMangaSource);
-        // alert(`Manga "${name}" added to UI (temporary). Run 'python backend/MangaScraper.py add --name "${name}" --url "${url}" --selector "${selector}" ${selectorType === 'xpath' ? '--xpath' : ''}' to save permanently.`);
 
-        // --- Simulation --- 
-        // In a real app, you'd POST this to a backend endpoint.
-        // Here, we just log it and maybe add a placeholder to the table 
-        // or just remind the user to run the script.
-        // For now, we won't add visually to avoid confusion with non-persisted data.
-        
+        // ** GitHub API Interaction **
+        // Replace with your actual username and repo name
+        const githubUser = 'PhilippeHo27'; // FIXME: Replace with your GitHub username
+        const githubRepo = 'MangaFetcher'; // FIXME: Replace with your repo name
+        const filePath = 'data/manga_chapters.json';
+        const apiUrl = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/${filePath}`;
+
+        try {
+            // 1. Fetch the current file content and SHA
+            tokenErrorMessage.textContent = 'Fetching current manga list...';
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    // File doesn't exist yet - handle creation (more complex)
+                    tokenErrorMessage.textContent = 'Error: manga_chapters.json not found. Initial creation via UI not yet supported.';
+                    // TODO: Implement file creation logic if needed
+                } else if (response.status === 401) {
+                     tokenErrorMessage.textContent = 'Error: Invalid GitHub token or insufficient permissions.';
+                } else {
+                    tokenErrorMessage.textContent = `Error fetching file: ${response.status} ${response.statusText}`;
+                }
+                throw new Error(`GitHub API fetch failed: ${response.status}`);
+            }
+
+            const fileData = await response.json();
+            const currentContentBase64 = fileData.content;
+            const currentSha = fileData.sha;
+
+            // 2. Decode, Update, Encode
+            tokenErrorMessage.textContent = 'Updating manga list...';
+            let currentMangas = [];
+            try {
+                 // Decode Base64 content
+                 const decodedContent = atob(currentContentBase64);
+                 currentMangas = JSON.parse(decodedContent);
+                 if (!Array.isArray(currentMangas)) { // Basic validation
+                     throw new Error('Invalid JSON structure: Expected an array.');
+                 }
+            } catch (e) {
+                tokenErrorMessage.textContent = `Error parsing existing JSON: ${e.message}`;
+                console.error("Error decoding/parsing JSON:", e);
+                return; // Stop processing
+            }
+
+            // Add the new manga
+            currentMangas.push(newMangaSource);
+
+            // Encode the updated array back to Base64 JSON
+            const updatedContent = JSON.stringify(currentMangas, null, 2); // Pretty print JSON
+            const updatedContentBase64 = btoa(updatedContent);
+
+            // 3. Commit the changes
+            tokenErrorMessage.textContent = 'Committing changes to GitHub...';
+            const commitMessage = `Add manga: ${name}`;
+
+            const commitResponse = await fetch(apiUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: commitMessage,
+                    content: updatedContentBase64,
+                    sha: currentSha // IMPORTANT: Provide the SHA of the file being replaced
+                })
+            });
+
+            if (!commitResponse.ok) {
+                 if (commitResponse.status === 401) {
+                     tokenErrorMessage.textContent = 'Error: Invalid GitHub token or insufficient permissions for commit.';
+                } else if (commitResponse.status === 409) {
+                     tokenErrorMessage.textContent = 'Error: Conflict detected. Please refresh and try again.';
+                } else {
+                     tokenErrorMessage.textContent = `Error committing file: ${commitResponse.status} ${commitResponse.statusText}`;
+                }
+                throw new Error(`GitHub API commit failed: ${commitResponse.status}`);
+            }
+
+            tokenErrorMessage.textContent = 'Manga added successfully to GitHub!';
+            console.log('Commit successful:', await commitResponse.json());
+            addMangaForm.reset(); // Clear form on success
+            // Optionally, trigger a refresh of the displayed list after a short delay
+            setTimeout(loadAndRenderManga, 1000); // Refresh list after 1s
+
+        } catch (error) {
+            console.error('Error in GitHub interaction:', error);
+            // Error message already set in specific catch blocks or will be generic
+            if (!tokenErrorMessage.textContent.startsWith('Error:')) {
+                 tokenErrorMessage.textContent = 'An unexpected error occurred.';
+            }
+        }
+
         addMangaForm.reset(); // Clear the form
         // Potentially refresh list after a short delay, though it won't show the new manga yet
-        // setTimeout(loadAndRenderManga, 500); 
     }
 
     // Function to handle clicking 'Mark Read/Unread' buttons (simulated)
