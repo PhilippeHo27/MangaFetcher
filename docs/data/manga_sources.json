@@ -5,5 +5,40 @@
     "selector": "/html/body/div/div/div/div/div/main/article/div/div/div/ul/li/ul/li/a",
     "use_xpath": true,
     "isActive": true
+  },
+  {
+    "name": "Dandadan",
+    "url": "https://www.dandadanchapters.com/",
+    "selector": "/html/body/div/div/div/div/div/main/article/div/div/div/ul/li/ul/li[1]/a",
+    "use_xpath": true,
+    "isActive": true
+  },
+  {
+    "name": "Kagurabachi",
+    "url": "https://readkagura.com/",
+    "selector": "/html/body/div/div/div/div/div/main/article/div/div/div/ul/li/ul/li[1]/a",
+    "use_xpath": true,
+    "isActive": true
+  },
+  {
+    "name": "Sakamoto Days",
+    "url": "https://www.sakamotodayschapters.com/",
+    "selector": "/html/body/div/div/div/div/div/main/article/div/div/div/ul/li/ul/li[1]/a",
+    "use_xpath": true,
+    "isActive": true
+  },
+  {
+    "name": "One Punch Man",
+    "url": "https://readonepunch-man.com/",
+    "selector": "/html/body/div[1]/div/div/div/main/div/article/div/div/div[3]/div/div[2]/div/ul/li[1]/a",
+    "use_xpath": true,
+    "isActive": true
+  },
+  {
+    "name": "Eleceed",
+    "url": "https://www.toongod.org/webtoon/eleceed-manhwa/",
+    "selector": "/html/body/div[1]/div/div/div/div[2]/div/div/div/div/div/div[1]/div/div[5]/div/ul/li[1]/a",
+    "use_xpath": true,
+    "isActive": true
   }
 ]
