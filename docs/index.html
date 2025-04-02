@@ -12,66 +12,8 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
-    <header class="app-header">
-        <div class="theme-controls">
-            <!-- Accent Color Theme Switcher -->
-            <div id="accent-theme-switcher" class="theme-switcher bottom-right">
-                <button class="theme-button" data-theme="default" title="Default (Yellow)" style="background-color: #ffff00;"></button>
-                <button class="theme-button" data-theme="red" title="Red" style="background-color: #FF5E5E;"></button>
-                <button class="theme-button" data-theme="cyan" title="Cyan" style="background-color: #42C1D6;"></button>
-                <button class="theme-button" data-theme="magenta" title="Magenta" style="background-color: #DF7CFF;"></button>
-                <button class="theme-button" data-theme="orange" title="Orange" style="background-color: #FFB445;"></button>
-                <button class="theme-button" data-theme="bright-green" title="Bright Green" style="background-color: #01FF76;"></button>
-            </div>
-
-            <!-- Background Color Theme Switcher -->
-            <div id="bg-theme-switcher" class="theme-switcher bottom-left">
-                <button class="theme-button" data-bg-theme="default" title="Default BG (White)" style="background-color: #ffffff;"></button>
-                <button class="theme-button" data-bg-theme="cyan-bg" title="Cyan BG" style="background-color: #42C1D6;"></button>
-                <button class="theme-button" data-bg-theme="yellow-bg" title="Yellow BG" style="background-color: #FFE332;"></button>
-            </div>
-        </div>
-    </header>
 
     <main class="container">
-        <section id="add-manga-section" class="card">
-            <h2>Add New Manga</h2>
-            <form id="add-manga-form">
-                <div class="form-group">
-                    <label for="manga-name">Manga Name:</label>
-                    <input type="text" id="manga-name" name="manga-name" placeholder="e.g., One Piece" required>
-                </div>
-                <div class="form-group">
-                    <label for="manga-url">Source URL:</label>
-                    <input type="url" id="manga-url" name="manga-url" placeholder="e.g., https://mangadex.org/title/..." required>
-                </div>
-                <div class="form-group">
-                    <label for="manga-selector">CSS Selector or XPath:</label>
-                    <input type="text" id="manga-selector" name="manga-selector" placeholder="e.g., .latest-chapter a OR /html/body//div/a" required>
-                </div>
-                <div class="form-group">
-                    <label for="selector-type">Selector Type:</label>
-                    <select id="selector-type" name="selector-type">
-                        <option value="css" selected>CSS Selector</option>
-                        <option value="xpath">XPath</option>
-                    </select>
-                </div>
-                <div class="form-group token-group">
-                    <label for="github-token">GitHub Token:</label>
-                    <input type="password" id="github-token" name="github-token"
-                           placeholder="Generate at Profile > Settings > Developer settings > Personal access tokens (classic)"
-                           required>
-                    <span id="token-error-message" class="error-message" style="display: none;"></span>
-                </div>
-                <button type="submit" class="btn">Add Manga</button>
-            </form>
-            <p class="note">
-                How to use this:
-                <br>1. Name the manga.
-                <br>2. Provide the URL for the site that hosts it.
-                <br>3. Find where the link to the latest chapter appears on that page. Inspect the element (right-click > Inspect) and copy its CSS Selector or XPath.
-            </p>
-        </section>
 
         <section id="tracked-manga-section" class="card">
             <div class="tracked-manga-header">
@@ -93,6 +35,49 @@
                     </tbody>
                 </table>
             </div>
+        </section>
+
+        <section id="add-manga-section" class="card">
+            <h2>Add New Manga</h2>
+            <form id="add-manga-form">
+                <div class="form-group">
+                    <label for="manga-name">Manga Name:</label>
+                    <input type="text" id="manga-name" name="manga-name" placeholder="e.g., One Piece" required>
+                </div>
+                <div class="form-group">
+                    <label for="manga-url">Source URL:</label>
+                    <input type="url" id="manga-url" name="manga-url" placeholder="e.g., https://mangadex.org/title/..." required>
+                </div>
+                <div class="form-group">
+                    <label for="manga-selector">CSS Selector or XPath:</label>
+                    <input type="text" id="manga-selector" name="manga-selector" placeholder="e.g., .latest-chapter a OR /html/body//div/a" required>
+                </div>
+                <div class="form-group selector-type">
+                    <label>Selector Type:</label>
+                    <div>
+                        <input type="radio" id="selector-css" name="selector-type" value="css" checked>
+                        <label for="selector-css">CSS</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="selector-xpath" name="selector-type" value="xpath">
+                        <label for="selector-xpath">XPath</label>
+                    </div>
+                </div>
+                <div class="form-group token-group">
+                    <label for="github-token">GitHub Token:</label>
+                    <input type="password" id="github-token" name="github-token"
+                           placeholder="Generate at Profile > Settings > Developer settings > Personal access tokens (classic)"
+                           required>
+                    <span id="token-error-message" class="error-message" style="display: none;"></span>
+                </div>
+                <button type="submit" class="btn">Add Manga</button>
+            </form>
+            <p class="note">
+                <strong>Instructions:</strong>
+                <br>1. Name the manga.
+                <br>2. Provide the URL for the site that hosts it.
+                <br>3. Find where the link to the latest chapter appears on that page. Inspect the element (right-click > Inspect) and copy its CSS Selector or XPath.
+            </p>
         </section>
     </main>
 

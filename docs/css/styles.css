@@ -9,7 +9,7 @@
     --border-width: 2px;
     --card-shadow: 5px 5px 0px var(--border-color);
     --button-shadow: 3px 3px 0px var(--border-color);
-    --button-hover-shadow: 4px 4px 0px var(--accent-color);
+    --button-hover-shadow: 4px 4px 0px var(--primary-color);
     --link-hover-color: var(--accent-color);
     --table-bg-color: #ffffff;
     --table-border-color: #000000;
@@ -45,9 +45,12 @@ h1, h2 {
 }
 
 h2 {
-    font-size: 1.6em;
-    border-bottom: 2px solid var(--accent-color);
-    padding-bottom: 0.3rem;
+    font-size: 1.8em;
+    color: var(--header-text-color);
+    margin-top: 0;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--primary-color);
 }
 
 header {
@@ -129,6 +132,29 @@ main {
  gap: 0.5em;
 }
 
+.note {
+    font-size: 0.9em;
+    color: var(--text-color-muted);
+    margin-top: 1rem;
+    line-height: 1.4;
+}
+
+.selector-type {
+    display: flex;
+    align-items: center; /* Align items vertically */
+    gap: 1rem; /* Space between label and radio groups */
+}
+
+.selector-type > div {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem; /* Space between radio button and its label */
+}
+
+.selector-type label { /* Adjust label styling if needed */
+    margin-bottom: 0; /* Override default form-group label margin */
+}
+
  /* Ensure token input matches other inputs but is flexible */
  #github-token {
      padding: 0.5em;
@@ -159,13 +185,13 @@ main {
      background-color: var(--secondary-color);
      color: var(--primary-color);
      transform: translate(-1px, -1px);
-     box-shadow: 4px 4px 0px var(--accent-color);
+     box-shadow: 4px 4px 0px var(--primary-color);
      outline: none;
  }
 
  .btn:active {
      transform: translate(0px, 0px);
-     box-shadow: 2px 2px 0px var(--border-color);
+     box-shadow: 2px 2px 0px var(--primary-color);
  }
 
  .refresh-btn {
