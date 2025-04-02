@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="default" data-bg-theme="default">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manga Tracker</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
@@ -17,8 +20,8 @@
             <h2>Add New Manga</h2>
             <form id="add-manga-form">
                 <div class="form-group">
-                    <label for="manga-name">Name:</label>
-                    <input type="text" id="manga-name" name="manga-name" required>
+                    <label for="manga-name">Manga Name:</label>
+                    <input type="text" id="manga-name" name="manga-name" placeholder="e.g., One Piece" required>
                 </div>
                 <div class="form-group">
                     <label for="manga-url">Source URL:</label>
@@ -39,9 +42,16 @@
                          <label for="selector-xpath">XPath</label>
                      </div>
                 </div>
-                <button type="submit" class="btn">Add Manga</button>
+                <div class="form-group">
+                    <label for="github-token">GitHub Token (Optional):</label>
+                    <input type="password" id="github-token" name="github-token" placeholder="Enter token if using private repo" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn">Add Manga</button>
+                    <div id="token-error-message" class="error-message" style="display: inline-block; margin-left: 10px; vertical-align: middle;"></div>
+                </div>
                  <p class="note">Note: Adding via UI requires manual script run or backend integration to persist.</p>
-            </form>
+             </form>
         </section>
 
         <section class="card manga-list-section">
@@ -66,6 +76,24 @@
             </div>
              <p class="note">Marking read/unread via UI requires manual script run or backend integration to persist.</p>
         </section>
+
+        <!-- Accent Color Theme Switcher -->
+        <div id="accent-theme-switcher" class="theme-switcher bottom-right">
+            <button class="theme-button" data-theme="default" title="Default (Yellow)" style="background-color: #ffff00;"></button>
+            <button class="theme-button" data-theme="red" title="Red" style="background-color: #FF5E5E;"></button>
+            <button class="theme-button" data-theme="cyan" title="Cyan" style="background-color: #42C1D6;"></button>
+            <button class="theme-button" data-theme="magenta" title="Magenta" style="background-color: #DF7CFF;"></button>
+            <button class="theme-button" data-theme="orange" title="Orange" style="background-color: #FFB445;"></button>
+            <button class="theme-button" data-theme="bright-green" title="Bright Green" style="background-color: #01FF76;"></button>
+
+        </div>
+
+        <!-- Background Color Theme Switcher -->
+        <div id="bg-theme-switcher" class="theme-switcher bottom-left">
+            <button class="theme-button" data-bg-theme="default" title="Default BG (White)" style="background-color: #ffffff;"></button>
+            <button class="theme-button" data-bg-theme="cyan-bg" title="Cyan BG" style="background-color: #42C1D6;"></button>
+            <button class="theme-button" data-bg-theme="yellow-bg" title="Yellow BG" style="background-color: #FFE332;"></button>
+        </div>
     </main>
 
     <template id="manga-row-template">

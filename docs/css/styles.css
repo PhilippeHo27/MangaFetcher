@@ -1,10 +1,11 @@
 :root {
     --primary-color: #000000;
     --secondary-color: #ffffff;
-    --accent-color: #ffff00; /* Bright yellow accent */
+    --accent-color: #ffff00;
     --border-color: #000000;
-    --background-color: #ffffff;
-    --font-family: 'Arial', sans-serif; /* Simple, sans-serif font */
+    --body-background-color: #D0FDE4;
+    --card-background-color: #ffffff;
+    --font-family: 'Arial', sans-serif;
     --border-width: 2px;
     --card-shadow: 5px 5px 0px var(--border-color);
     --button-shadow: 3px 3px 0px var(--border-color);
@@ -14,7 +15,7 @@
 
 body {
     font-family: var(--font-family);
-    background-color: var(--background-color);
+    background-color: var(--body-background-color);
     color: var(--primary-color);
     margin: 0;
     padding: 0;
@@ -31,8 +32,8 @@ h1, h2 {
 }
 
 header {
-    background-color: var(--accent-color);
-    color: var(--primary-color);
+    background-color: #C7BDFA;
+    color: #000000;
     padding: 1em 0;
     border-bottom: var(--border-width) solid var(--border-color);
     text-align: center;
@@ -40,7 +41,8 @@ header {
 
 header h1 {
     margin: 0;
-    font-size: 2.5em;
+    font-weight: 600;
+    font-size: 4em;
 }
 
 main {
@@ -52,7 +54,7 @@ main {
 }
 
 .card {
-    background-color: var(--secondary-color);
+    background-color: var(--card-background-color); /* Use themeable card background */
     border: var(--border-width) solid var(--border-color);
     padding: 1.5em;
     margin-bottom: 2em;
@@ -77,17 +79,19 @@ main {
 }
 
 .form-group input[type="text"],
-.form-group input[type="url"] {
+.form-group input[type="url"],
+.form-group input[type="password"] {
     width: calc(100% - 10px - var(--border-width) * 2); /* Account for padding and border */
     padding: 5px;
     border: var(--border-width) solid var(--border-color);
-    background-color: var(--background-color);
+    background-color: var(--secondary-color); /* Force white background */
     font-family: var(--font-family);
     font-size: 1em;
 }
 
 .form-group input[type="text"]:focus,
-.form-group input[type="url"]:focus {
+.form-group input[type="url"]:focus,
+.form-group input[type="password"]:focus {
     outline: var(--border-width) solid var(--accent-color);
     outline-offset: 1px;
 }
@@ -106,141 +110,240 @@ main {
  gap: 0.5em;
 }
 
-.btn {
-    display: inline-block;
-    background-color: var(--accent-color);
-    color: var(--primary-color);
-    border: var(--border-width) solid var(--border-color);
-    padding: 0.5em 1em;
-    text-decoration: none;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: var(--button-shadow);
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
-    margin-top: 0.5em;
-    font-size: 1em;
-}
+ /* Ensure token input matches other inputs but is flexible */
+ #github-token {
+     padding: 0.5em;
+     border: var(--border-width) solid var(--primary-color);
+     font-size: 1em;
+     background-color: var(--secondary-color); /* Force white background */
+     color: var(--primary-color);
+     box-sizing: border-box; /* Include padding and border in the element's total width and height */
+     width: 100%; /* Full width now it's in its own group */
+ }
 
-.btn:hover, .btn:focus {
-    background-color: var(--secondary-color);
-    color: var(--primary-color);
-    transform: translate(-1px, -1px);
-    box-shadow: 4px 4px 0px var(--accent-color);
-    outline: none;
-}
+ .btn {
+     display: inline-block;
+     background-color: var(--accent-color); /* Accent color controls button BG */
+     color: var(--primary-color); /* Text color still primary (usually black) */
+     border: var(--border-width) solid var(--border-color);
+     padding: 0.5em 1em;
+     text-decoration: none;
+     font-weight: bold;
+     cursor: pointer;
+     box-shadow: var(--button-shadow);
+     transition: transform 0.1s ease, box-shadow 0.1s ease;
+     margin-top: 0.5em;
+     font-size: 1em;
+ }
 
-.btn:active {
-    transform: translate(0px, 0px);
-    box-shadow: 2px 2px 0px var(--border-color);
-}
+ .btn:hover, .btn:focus {
+     background-color: var(--secondary-color);
+     color: var(--primary-color);
+     transform: translate(-1px, -1px);
+     box-shadow: 4px 4px 0px var(--accent-color);
+     outline: none;
+ }
 
-.refresh-btn {
-    margin-bottom: 1em;
-}
+ .btn:active {
+     transform: translate(0px, 0px);
+     box-shadow: 2px 2px 0px var(--border-color);
+ }
 
-.table-container {
-    overflow-x: auto; /* Allows table to be scrolled horizontally if needed */
-}
+ .refresh-btn {
+     margin-bottom: 1em;
+ }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    border: var(--border-width) solid var(--border-color);
-}
+ .table-container {
+     overflow-x: auto; /* Allows table to be scrolled horizontally if needed */
+ }
 
-th, td {
-    border: var(--border-width) solid var(--border-color);
-    padding: 0.75em;
-    text-align: left;
-    vertical-align: middle;
-}
+ table {
+     width: 100%;
+     border-collapse: collapse;
+     border: var(--border-width) solid var(--border-color);
+ }
 
-thead {
-    background-color: var(--accent-color);
-    color: var(--primary-color);
-    font-weight: bold;
-}
+ th, td {
+     border: var(--border-width) solid var(--border-color);
+     padding: 0.75em;
+     text-align: left;
+     vertical-align: middle;
+ }
 
-tbody tr:nth-child(even) {
-    background-color: #f2f2f2; /* Slight alternating background for readability */
-}
+ thead {
+     background-color: var(--accent-color); /* Accent color controls thead BG */
+     color: var(--primary-color); /* Text color still primary (usually black) */
+     font-weight: bold;
+ }
 
-tbody tr.is-read {
-    background-color: #e0e0e0; /* Style for read items */
-    color: #555;
-}
+ tbody tr:nth-child(even) {
+     background-color: #f2f2f2; /* Slight alternating background for readability */
+ }
 
-tbody tr.is-read td a {
-    color: #555;
-}
+ tbody tr.is-read {
+     background-color: #e0e0e0; /* Style for read items */
+     color: #555;
+ }
 
-td a {
-    color: var(--primary-color);
-    text-decoration: underline;
-    font-weight: bold;
-}
+ tbody tr.is-read td a {
+     color: #555;
+ }
 
-td a:hover {
-    color: var(--link-hover-color);
-    text-decoration: none;
-}
+ td a {
+     color: var(--primary-color);
+     text-decoration: underline;
+     font-weight: bold;
+ }
 
-td .btn {
-    padding: 0.25em 0.5em;
-    margin-right: 0.5em;
-    margin-top: 0;
-    font-size: 0.9em;
-}
+ td a:hover {
+     color: var(--link-hover-color);
+     text-decoration: none;
+ }
 
-.note {
-    font-size: 0.85em;
-    color: #555;
-    margin-top: 1em;
-    border-top: 1px dashed #ccc;
-    padding-top: 0.5em;
-}
+ td .btn {
+     padding: 0.25em 0.5em;
+     margin-right: 0.5em;
+     margin-top: 0;
+     font-size: 0.9em;
+ }
 
-footer {
-    background-color: var(--primary-color);
-    color: var(--secondary-color);
-    text-align: center;
-    padding: 1em 0;
-    margin-top: 2em; /* Ensure space above footer */
-    font-size: 0.9em;
-}
+ .note {
+     font-size: 0.85em;
+     color: #555;
+     margin-top: 1em;
+     border-top: 1px dashed #ccc;
+     padding-top: 0.5em;
+ }
 
-/* Responsive adjustments */
-@media (max-width: 600px) {
-    header h1 {
-        font-size: 2em;
-    }
+ .error-message {
+     color: #d9534f; /* A shade of red */
+     font-size: 0.9em;
+     margin-top: 5px;
+     min-height: 1em; /* Reserve space even when empty */
+     display: block; /* Ensure it takes space */
+ }
 
-    main {
-        width: 95%;
-        margin: 1em auto;
-    }
+ footer {
+     background-color: var(--primary-color);
+     color: var(--secondary-color);
+     text-align: center;
+     padding: 1em 0;
+     margin-top: 2em; /* Ensure space above footer */
+     font-size: 0.9em;
+ }
 
-    .card {
-        padding: 1em;
-        box-shadow: 3px 3px 0px var(--border-color);
-    }
+ /* --- Theme Definitions (Accent Only) --- */
+ [data-theme="red"] {
+     --accent-color: #FF5E5E;
+ }
 
-    .btn {
-        width: 100%;
-        text-align: center;
-        padding: 0.75em 1em;
-    }
+ [data-theme="cyan"] {
+     --accent-color: #42C1D6;
+ }
 
-    .refresh-btn {
-        width: auto;
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-    }
+ [data-theme="magenta"] {
+     --accent-color: #DF7CFF;
+ }
 
-    .form-group.selector-type {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5em;
-    }
-}
+ [data-theme="orange"] {
+     --accent-color: #FFB445;
+ }
+
+ [data-theme="bright-green"] {
+     --accent-color: #01FF76;
+ }
+
+ /* --- Theme Definitions (Background) --- */
+ /* Default is white bg, black text/borders - defined in :root */
+ [data-bg-theme="cyan-bg"] {
+     --card-background-color: #42C1D6;
+ }
+ [data-bg-theme="yellow-bg"] {
+     --card-background-color: #FFE332;
+ }
+
+ /* --- Theme Switcher Styles (Neo-Brutalist Squares) --- */
+ .theme-switcher { /* Generic styles */
+     position: fixed;
+     display: flex;
+     gap: 8px;
+     padding: 8px;
+     background-color: var(--secondary-color);
+     border: var(--border-width) solid var(--border-color);
+     box-shadow: 3px 3px 0px var(--border-color);
+     z-index: 1000;
+ }
+
+ .theme-switcher.bottom-right {
+     bottom: 15px;
+     right: 15px;
+ }
+
+ .theme-switcher.bottom-left {
+     bottom: 15px;
+     left: 15px;
+ }
+
+ .theme-button {
+     width: 25px;
+     height: 25px;
+     border: var(--border-width) solid var(--border-color);
+     cursor: pointer;
+     box-shadow: 2px 2px 0px var(--border-color);
+     transition: transform 0.1s ease, box-shadow 0.1s ease;
+ }
+
+ .theme-button:hover {
+     transform: translate(1px, 1px);
+     box-shadow: 1px 1px 0px var(--border-color);
+ }
+
+ .theme-button:active {
+     transform: translate(2px, 2px);
+     box-shadow: none;
+ }
+
+ /* Style active button with border matching its own background */
+ .theme-button.active {
+     border-width: 3px; /* Thicker border */
+     /* We use inline style for background, so can't use var() easily here */
+     /* A simple outline might be better for contrast */
+     outline: 2px solid var(--primary-color);
+     outline-offset: -4px;
+ }
+
+ /* Responsive adjustments */
+ @media (max-width: 600px) {
+     header h1 {
+         font-size: 2em;
+     }
+
+     main {
+         width: 95%;
+         margin: 1em auto;
+     }
+
+     .card {
+         padding: 1em;
+         box-shadow: 3px 3px 0px var(--border-color);
+     }
+
+     .btn {
+         width: 100%;
+         text-align: center;
+         padding: 0.75em 1em;
+     }
+
+     .refresh-btn {
+         width: auto;
+         display: block;
+         margin-left: auto;
+         margin-right: auto;
+     }
+
+     .form-group.selector-type {
+         flex-direction: column;
+         align-items: flex-start;
+         gap: 0.5em;
+     }
+ }

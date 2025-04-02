@@ -1,8 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const mangaTableBody = document.getElementById('manga-table-body');
     const addMangaForm = document.getElementById('add-manga-form');
+    const githubTokenInput = document.getElementById('github-token');
     const refreshButton = document.getElementById('refresh-button');
     const mangaDataPath = 'data/manga_chapters.json';
+    const tokenErrorMessage = document.getElementById('token-error-message');
+    const themeSwitcher = document.getElementById('theme-switcher');
+    const accentThemeSwitcher = document.getElementById('accent-theme-switcher');
+    const bgThemeSwitcher = document.getElementById('bg-theme-switcher');
 
     // --- Functions ---
 
@@ -12,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add a cache-busting query parameter
             const response = await fetch(`${mangaDataPath}?v=${Date.now()}`);
             if (!response.ok) {
-                 // If file not found (404), it might just be empty initially
+                // If file not found (404), it might just be empty initially
                 if (response.status === 404) {
                     console.warn(`${mangaDataPath} not found. Assuming empty list.`);
                     return []; // Return empty array
@@ -44,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         mangaData.forEach(manga => {
             const row = document.createElement('tr');
-             // Add 'is-read' class if manga is read
+            // Add 'is-read' class if manga is read
             if (manga.isRead) {
                 row.classList.add('is-read');
             }
@@ -61,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         `<a href="${chapterUrl}" target="_blank" rel="noopener noreferrer">${chapterText}</a>` : 
                         chapterText
                     }
-                     ${manga.lastUpdated ? `<br><small>Checked: ${new Date(manga.lastUpdated).toLocaleString()}</small>` : ''}
+                    ${manga.lastUpdated ? `<br><small>Checked: ${new Date(manga.lastUpdated).toLocaleString()}</small>` : ''}
                 </td>
                 <td>${manga.isRead ? 'Read' : 'Unread'}</td>
                 <td>
@@ -107,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         console.log('Attempting to add (UI only):', newMangaSource);
-        alert(`Manga "${name}" added to UI (temporary). Run 'python backend/MangaScraper.py add --name "${name}" --url "${url}" --selector "${selector}" ${selectorType === 'xpath' ? '--xpath' : ''}' to save permanently.`);
+        // alert(`Manga "${name}" added to UI (temporary). Run 'python backend/MangaScraper.py add --name "${name}" --url "${url}" --selector "${selector}" ${selectorType === 'xpath' ? '--xpath' : ''}' to save permanently.`);
 
         // --- Simulation --- 
         // In a real app, you'd POST this to a backend endpoint.
@@ -169,58 +174,139 @@ document.addEventListener('DOMContentLoaded', () => {
     addMangaForm.addEventListener('submit', handleAddManga);
     refreshButton.addEventListener('click', loadAndRenderManga);
 
+    // --- Theme Switching Logic ---
+    const THEME_STORAGE_KEY = 'mangaFetcherTheme';
+    const BG_THEME_STORAGE_KEY = 'mangaFetcherBgTheme';
+
+    function applyTheme(themeName) {
+        document.documentElement.setAttribute('data-theme', themeName);
+        // Update active button state
+        const currentActive = accentThemeSwitcher.querySelector('.theme-button.active');
+        if (currentActive) {
+            currentActive.classList.remove('active');
+        }
+        const newActive = accentThemeSwitcher.querySelector(`.theme-button[data-theme="${themeName}"]`);
+        if (newActive) {
+            newActive.classList.add('active');
+        }
+        localStorage.setItem(THEME_STORAGE_KEY, themeName);
+        console.log(`Theme set to: ${themeName}`);
+    }
+
+    function applyBgTheme(bgThemeName) {
+        document.documentElement.setAttribute('data-bg-theme', bgThemeName);
+        // Update active button state
+        const currentActive = bgThemeSwitcher.querySelector('.theme-button.active');
+        if (currentActive) {
+            currentActive.classList.remove('active');
+        }
+        const newActive = bgThemeSwitcher.querySelector(`.theme-button[data-bg-theme="${bgThemeName}"]`);
+        if (newActive) {
+            newActive.classList.add('active');
+        }
+        localStorage.setItem(BG_THEME_STORAGE_KEY, bgThemeName);
+        console.log(`Background Theme set to: ${bgThemeName}`);
+    }
+
+    accentThemeSwitcher.addEventListener('click', (event) => {
+        if (event.target.classList.contains('theme-button')) {
+            const theme = event.target.dataset.theme;
+            if (theme) {
+                applyTheme(theme);
+            }
+        }
+    });
+
+    bgThemeSwitcher.addEventListener('click', (event) => {
+        if (event.target.classList.contains('theme-button')) {
+            const bgTheme = event.target.dataset.bgTheme;
+            if (bgTheme) {
+                applyBgTheme(bgTheme);
+            }
+        }
+    });
+
+    // Apply saved theme on load or default
+    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || 'default'; 
+    applyTheme(savedTheme);
+
+    // Apply saved background theme on load or default
+    const savedBgTheme = localStorage.getItem(BG_THEME_STORAGE_KEY) || 'default';
+    applyBgTheme(savedBgTheme);
+
     // --- Initial Load ---
     loadAndRenderManga(); 
 
     // --- GitHub API Interaction (INSECURE - For Demo Only) ---
     async function commitChanges(newMangaDetails) {
-        // !!! SECURITY WARNING: Hardcoding tokens is highly insecure !!!
-        // Replace placeholders with your actual token, repo, and owner
-        const token = 'YOUR_GITHUB_TOKEN'; // USE A TOKEN WITH repo SCOPE ONLY
-        const repo = 'YOUR_REPO_NAME';      // e.g., 'MangaFetcher'
-        const owner = 'YOUR_GITHUB_USERNAME';// e.g., 'YourGitHubUser'
+        const token = githubTokenInput.value.trim();
+        const repo = 'MangaFetcher'; // Deduced from URL
+        const owner = 'PhilippeHo27'; // Deduced from URL
         const path = 'data/pending_changes.json'; // The file to update
         const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
         const commitMessage = `Frontend: Add new manga source - ${newMangaDetails.name}`;
+
+        if (!token) {
+            displayTokenError('GitHub token is required.');
+            return Promise.reject(new Error('GitHub token is required.')); // Reject the promise
+        }
 
         try {
             // 1. Get current file content and SHA
             let currentSha = null;
             let currentContent = '[]'; // Default to empty array if file doesn't exist
             try {
+                clearTokenError(); // Clear previous errors
                 const response = await fetch(apiUrl, {
                     headers: {
                         'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json'
                     }
                 });
                 if (response.ok) {
+                    // Save token on successful fetch (implies token is likely valid)
+                    localStorage.setItem('githubToken', token);
                     const data = await response.json();
                     currentSha = data.sha;
                     // Content is base64 encoded
                     currentContent = atob(data.content);
+                } else if (response.status === 401) {
+                    displayTokenError('Invalid GitHub token.');
+                    throw new Error(`GitHub API error (GET): 401 Unauthorized`);
+                } else if (response.status === 403) {
+                    displayTokenError('Token lacks permissions.');
+                    throw new Error(`GitHub API error (GET): 403 Forbidden`);
+                } else if (response.status === 404) {
+                    // Can be file not found or repo/owner invalid
+                    displayTokenError('Repo/File not found or token invalid.');
+                    throw new Error(`GitHub API error (GET): 404 Not Found`);
                 } else if (response.status !== 404) {
-                     // Handle errors other than file not found
+                    // Handle errors other than file not found
+                    displayTokenError(`API Error: ${response.status}`);
                     throw new Error(`GitHub API error (GET): ${response.status} ${response.statusText}`);
                 }
                 // If 404, currentSha remains null, currentContent remains '[]'
+                // We allow proceeding to try and create the file
             } catch (fetchError) {
-                 console.error('Error fetching current pending_changes.json:', fetchError);
-                 // Decide how to handle - maybe allow creating the file if SHA is null?
-                 // For now, rethrow or alert user
-                 alert(`Error fetching existing changes: ${fetchError.message}. Cannot save new manga.`);
-                 return; // Stop the commit process
+                console.error('Error fetching current pending_changes.json:', fetchError);
+                // Decide how to handle - maybe allow creating the file if SHA is null?
+                // For now, rethrow or alert user
+                // Display specific token error if already set, otherwise generic
+                if (!tokenErrorMessage.textContent) {
+                    displayTokenError(`Fetch Error: ${fetchError.message}`);
+                }
+                // Rethrow to stop the commit process and be caught by the outer try/catch
+                throw fetchError;
             }
 
             // 2. Prepare new content
             let changes = [];
             try {
-                 changes = JSON.parse(currentContent);
-                 if (!Array.isArray(changes)) changes = []; // Ensure it's an array
+                changes = JSON.parse(currentContent);
+                if (!Array.isArray(changes)) changes = []; // Ensure it's an array
             } catch (parseError) {
-                 console.error('Error parsing existing pending_changes.json content:', parseError);
-                 alert('Warning: Could not parse existing changes file. Starting fresh for this commit.');
-                 changes = []; // Reset if parsing fails
+                console.error('Error parsing existing pending_changes.json content:', parseError);
+                alert('Warning: Could not parse existing changes file. Starting fresh for this commit.');
+                changes = []; // Reset if parsing fails
             }
 
             changes.push(newMangaDetails); // Add the new manga details
@@ -240,307 +326,69 @@ document.addEventListener('DOMContentLoaded', () => {
                 method: 'PUT',
                 headers: {
                     'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json',
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(commitPayload)
             });
 
             if (!putResponse.ok) {
-                const errorData = await putResponse.json();
-                throw new Error(`GitHub API error (PUT): ${putResponse.status} ${putResponse.statusText} - ${errorData.message}`);
+                // Handle specific errors related to token/permissions during PUT
+                if (putResponse.status === 401) {
+                    displayTokenError('Invalid GitHub token.');
+                    throw new Error('GitHub API error (PUT): 401 Unauthorized - Invalid token.');
+                } else if (putResponse.status === 403) {
+                    displayTokenError('Token lacks permissions.');
+                    throw new Error('GitHub API error (PUT): 403 Forbidden - Token lacks permissions.');
+                } else if (putResponse.status === 404) {
+                    // This might happen if the repo/owner was wrong initially
+                    displayTokenError('Repo/Owner not found?');
+                    throw new Error('GitHub API error (PUT): 404 Not Found.');
+                } else if (putResponse.status === 409) {
+                    displayTokenError('Conflict (SHA mismatch?).');
+                    throw new Error('GitHub API error (PUT): 409 Conflict - SHA mismatch or branch issue? Try refreshing.');
+                } else if (putResponse.status === 422) {
+                    displayTokenError('Commit Error (content?).');
+                    throw new Error('GitHub API error (PUT): 422 Unprocessable Entity - Invalid content or commit structure?');
+                } else {
+                    displayTokenError(`API Error: ${putResponse.status}`);
+                    throw new Error(`GitHub API error (PUT): ${putResponse.status} ${putResponse.statusText}`);
+                }
             }
 
-            console.log('Successfully submitted new manga to pending_changes.json');
-            // Optional: Show success message to user
-            // alert('New manga submitted for processing!');
-
+            console.log('Commit successful:', await putResponse.json());
+            // Optionally clear the form or give user feedback
         } catch (error) {
-            console.error('Error committing changes via GitHub API:', error);
-            alert(`Failed to submit manga: ${error.message}`);
-            // Potentially revert UI change if commit fails?
-        }
-    }
-
-    // --- Data Fetching ---
-    async function fetchMangaData() {
-        // Use cache-busting query parameter to try and get fresh data
-        const timestamp = new Date().getTime();
-        try {
-            // Assuming chapters file is correctly placed relative to docs/index.html
-            const response = await fetch(`data/manga_chapters.json?v=${timestamp}`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            console.error('Error in commitChanges function:', error);
+            // Ensure specific token errors are displayed if not already
+            if (!tokenErrorMessage.textContent) {
+                displayTokenError(`Commit Error: ${error.message}`);
             }
-            const data = await response.json();
-            // Sort data? Maybe sort by title initially?
-            data.sort((a, b) => a.title.localeCompare(b.title));
-            return data;
-        } catch (error) {
-            console.error('Error fetching manga data:', error);
-            mangaTableBody.innerHTML = '<tr><td colspan="5">Error loading manga data. Please try refreshing.</td></tr>';
-            return []; // Return empty array on error
+            throw error;
         }
     }
 
-    // --- Rendering Logic ---
-    function renderMangaTable(mangaList) {
-        mangaTableBody.innerHTML = ''; // Clear existing rows
-
-        if (!mangaList || mangaList.length === 0) {
-            mangaTableBody.innerHTML = '<tr><td colspan="5">No manga tracked yet. Add one above!</td></tr>';
-            return;
-        }
-
-        mangaList.forEach(manga => {
-            const row = document.createElement('tr');
-            row.dataset.mangaId = manga.id; // Store manga ID on the row
-
-            const titleCell = document.createElement('td');
-            titleCell.textContent = manga.title;
-
-            const sourceCell = document.createElement('td');
-            const sourceLink = document.createElement('a');
-            if (manga.sourceUrl) {
-                sourceLink.href = manga.sourceUrl;
-                sourceLink.textContent = new URL(manga.sourceUrl).hostname; // Display domain name
-                sourceLink.target = '_blank';
-                sourceLink.rel = 'noopener noreferrer';
-            } else {
-                sourceLink.textContent = 'N/A';
-            }
-            sourceCell.appendChild(sourceLink);
-
-            const chaptersCell = document.createElement('td');
-            chaptersCell.innerHTML = ''; // Clear potential template content
-            if (manga.status === 'Pending' || manga.status === 'Pending First Scrape') {
-                chaptersCell.textContent = 'Pending...';
-            } else if (manga.chapters && manga.chapters.length > 0) {
-                // Display multiple chapters (e.g., latest 3)
-                const chaptersToShow = manga.chapters.slice(-3); // Get last 3
-                chaptersToShow.reverse().forEach((chap, index) => {
-                    if (chap.text && chap.text !== 'Unknown' && chap.text !== 'Error') {
-                        const chapterElement = document.createElement(chap.url ? 'a' : 'span');
-                        chapterElement.textContent = chap.text;
-                        if (chap.url) {
-                            chapterElement.href = chap.url;
-                            chapterElement.target = '_blank';
-                            chapterElement.rel = 'noopener noreferrer';
-                        }
-                        // Add scraped date?
-                        // const dateStr = chap.scrapedAt ? new Date(chap.scrapedAt).toLocaleDateString() : '';
-                        // chapterElement.title = `Scraped: ${dateStr}`;
-
-                        chaptersCell.appendChild(chapterElement);
-                        // Add a separator if not the last item
-                        if (index < chaptersToShow.length - 1) {
-                           chaptersCell.appendChild(document.createElement('br'));
-                        }
-                    }
-                });
-                 if (manga.chapters.length > chaptersToShow.length) {
-                    chaptersCell.appendChild(document.createElement('br'));
-                    const moreSpan = document.createElement('span');
-                    moreSpan.textContent = `(... and ${manga.chapters.length - chaptersToShow.length} older)`;
-                    moreSpan.style.fontSize = '0.8em';
-                    moreSpan.style.opacity = '0.7';
-                    chaptersCell.appendChild(moreSpan);
-                 }
-            } else {
-                chaptersCell.textContent = 'None Found';
-            }
-
-            const statusCell = document.createElement('td');
-            statusCell.textContent = manga.isRead ? 'Read' : 'Unread';
-            if (manga.status === 'Pending') {
-                statusCell.textContent = 'Pending'; // Override read/unread for pending
-            }
-            row.classList.toggle('read', manga.isRead && manga.status !== 'Pending');
-
-            const actionsCell = document.createElement('td');
-            const markReadButton = document.createElement('button');
-            markReadButton.textContent = manga.isRead ? 'Mark Unread' : 'Mark Read';
-            markReadButton.classList.add('btn-mark-read');
-            markReadButton.disabled = (manga.status === 'Pending');
-            actionsCell.appendChild(markReadButton);
-
-            const clearButton = document.createElement('button');
-            clearButton.textContent = 'Clear Old Chapters';
-            clearButton.classList.add('btn-clear');
-            const canClear = manga.chapters && manga.chapters.length > 1;
-            clearButton.style.display = canClear ? 'inline-block' : 'none';
-            clearButton.disabled = (manga.status === 'Pending');
-            actionsCell.appendChild(clearButton);
-
-            row.appendChild(titleCell);
-            row.appendChild(sourceCell);
-            row.appendChild(chaptersCell);
-            row.appendChild(statusCell);
-            row.appendChild(actionsCell);
-
-            mangaTableBody.appendChild(row);
-        });
-
-        // Remove old event listeners if we were attaching directly (now using delegation)
-        // setupActionListeners();
+    function displayError(message) {
+        mangaTableBody.innerHTML = `<tr><td colspan="5" class="error">${message}</td></tr>`;
     }
 
-    // --- Event Handlers (using Event Delegation) ---
-    function handleTableActions(event) {
-        const targetButton = event.target.closest('button');
-        if (!targetButton) return; // Click wasn't on a button
-
-        const row = targetButton.closest('tr');
-        const mangaId = parseInt(row.dataset.mangaId, 10);
-
-        if (targetButton.classList.contains('btn-mark-read')) {
-            handleMarkRead(mangaId, row);
-        } else if (targetButton.classList.contains('btn-clear')) {
-            handleClearOld(mangaId, row);
+    function displayTokenError(message) {
+        if (tokenErrorMessage) {
+            tokenErrorMessage.textContent = message;
+        } else {
+            console.error("Token error message element not found");
         }
     }
 
-    function handleMarkRead(mangaId, tableRow) {
-        // Find the manga in the cache
-        const mangaIndex = mangaDataCache.findIndex(m => m.id === mangaId);
-        if (mangaIndex === -1 || mangaDataCache[mangaIndex].status === 'Pending') {
-             console.warn(`Manga ID ${mangaId} not found in cache or is pending.`);
-             return; // Ignore if pending or not found
-        }
-
-        // Toggle the read status in the cache
-        mangaDataCache[mangaIndex].isRead = !mangaDataCache[mangaIndex].isRead;
-        const isNowRead = mangaDataCache[mangaIndex].isRead;
-
-        // Update the button text and row style directly
-        const button = tableRow.querySelector('.btn-mark-read');
-        button.textContent = isNowRead ? 'Mark Unread' : 'Mark Read';
-        tableRow.classList.toggle('read', isNowRead);
-        tableRow.querySelector('.manga-status').textContent = isNowRead ? 'Read' : 'Unread';
-
-        console.log(`Manga ID ${mangaId} marked as ${isNowRead ? 'read' : 'unread'} (UI only).`);
-        // In a real application, you'd likely call a backend endpoint here
-        // to persist the change and potentially trigger the chapter clearing.
-        // Example: await updateReadStatusOnBackend(mangaId, isNowRead);
-    }
-
-    function handleClearOld(mangaId, tableRow) {
-         // Find the manga in the cache
-        const mangaIndex = mangaDataCache.findIndex(m => m.id === mangaId);
-         if (mangaIndex === -1 || mangaDataCache[mangaIndex].status === 'Pending') {
-             console.warn(`Manga ID ${mangaId} not found in cache or is pending.`);
-             return; // Ignore if pending or not found
-         }
-
-        const manga = mangaDataCache[mangaIndex];
-
-        if (manga.chapters && manga.chapters.length > 1) {
-            // Keep only the latest chapter in the cache
-            const latestChapter = manga.chapters[manga.chapters.length - 1];
-            manga.chapters = [latestChapter];
-
-            // Re-render just the chapters cell and hide the clear button
-            const chaptersCell = tableRow.querySelector('.manga-chapters');
-            chaptersCell.innerHTML = ''; // Clear
-            const chapterElement = document.createElement(latestChapter.url ? 'a' : 'span');
-            chapterElement.textContent = latestChapter.text;
-            if (latestChapter.url) {
-                chapterElement.href = latestChapter.url;
-                chapterElement.target = '_blank';
-                chapterElement.rel = 'noopener noreferrer';
-            }
-            chaptersCell.appendChild(chapterElement);
-
-            const clearButton = tableRow.querySelector('.btn-clear');
-            clearButton.style.display = 'none';
-
-            console.log(`Cleared old chapters for Manga ID ${mangaId} (UI only).`);
-            // In a real application, call backend: await clearChaptersOnBackend(mangaId);
+    function clearTokenError() {
+        if (tokenErrorMessage) {
+            tokenErrorMessage.textContent = '';
         }
     }
 
-    async function handleAddManga(event) {
-        event.preventDefault();
-        const name = document.getElementById('manga-name').value.trim();
-        const url = document.getElementById('manga-url').value.trim();
-        const selector = document.getElementById('manga-selector').value.trim();
-        const selectorTypeInput = document.querySelector('input[name="selector-type"]:checked');
-
-        if (!selectorTypeInput) {
-            console.error("No selector type (CSS/XPath) is checked.");
-            alert("Please select a selector type (CSS or XPath).");
-            return; // Stop execution if no type is selected
-        }
-        const selectorType = selectorTypeInput.value;
-
-        if (!name || !url || !selector) {
-            alert('Please fill in all fields.');
-            return;
-        }
-
-        // Basic URL validation
-        try {
-             new URL(url);
-        } catch (_) {
-             alert('Please enter a valid URL.');
-             return;
-        }
-
-        // Prepare details for commit
-        const newMangaDetails = {
-            name: name,
-            url: url,
-            selector: selector,
-            use_xpath: selectorType === 'xpath',
-            timestamp: new Date().toISOString() // Add timestamp for tracking
-        };
-
-        // Prepare placeholder for immediate UI update
-        const placeholderManga = {
-            id: -1, // Temporary ID for UI
-            title: name,
-            sourceUrl: url,
-            chapters: [], // Start with empty chapters
-            isRead: false,
-            status: 'Pending', // Special status for UI
-            lastUpdated: new Date().toISOString()
-        };
-
-        // Add placeholder to the beginning of the cache
-        mangaDataCache.unshift(placeholderManga);
-
-        // Re-render the table immediately
-        renderMangaTable(mangaDataCache);
-
-        // Reset the form
-        addMangaForm.reset();
-
-        // Submit changes to GitHub (ASYNC - runs in background)
-        // !!! REMINDER: INSECURE METHOD !!!
-        await commitChanges(newMangaDetails);
-        // Note: The 'Pending' status will remain until the next full refresh
-        // fetches updated data processed by the backend/action.
+    // --- Initialization ---
+    // Load token from localStorage on page load
+    const savedToken = localStorage.getItem('githubToken');
+    if (savedToken && githubTokenInput) {
+        githubTokenInput.value = savedToken;
     }
-
-    // Initial load function
-    async function loadAndRenderManga() {
-        mangaTableBody.innerHTML = '<tr><td colspan="5">Loading manga data...</td></tr>'; // Updated colspan
-        const freshMangaData = await fetchMangaData();
-        // Filter out any leftover placeholders from previous failed commits if necessary
-        // mangaDataCache = mangaDataCache.filter(m => m.id !== -1);
-        renderMangaTable(freshMangaData);
-    }
-
-    // --- Event Listeners ---
-    addMangaForm.addEventListener('submit', handleAddManga);
-    refreshButton.addEventListener('click', loadAndRenderManga);
-    // Use event delegation for table actions
-    mangaTableBody.addEventListener('click', handleTableActions);
-
-    // --- Initial Load ---
-    loadAndRenderManga();
-
-    // Store manga data globally within this scope for easy updates
-    let mangaDataCache = [];
-
 });
