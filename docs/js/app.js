@@ -119,10 +119,9 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Attempting to add (UI only):', newMangaSource);
 
         // ** GitHub API Interaction **
-        // Replace with your actual username and repo name
         const githubUser = 'PhilippeHo27';
         const githubRepo = 'MangaFetcher';
-        const githubFilePath = 'docs/data/manga_sources.json';
+        const githubFilePath = 'data/manga_sources.json';
         const githubApiUrl = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/${githubFilePath}`;
 
         try {
