@@ -2,8 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mangaTableBody = document.getElementById('manga-table-body');
     const addMangaForm = document.getElementById('add-manga-form');
     const refreshButton = document.getElementById('refresh-button');
-    const mangaDataPath = '../data/manga_chapters.json'; // Relative path from index.html
-    const mangaSourcesPath = '../data/manga_sources.json'; // Path to sources
+    const mangaDataPath = 'data/manga_chapters.json';
 
     // --- Functions ---
 
