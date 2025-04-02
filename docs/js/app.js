@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const mangaTableBody = document.getElementById('manga-table-body');
     const addMangaForm = document.getElementById('add-manga-form');
     const githubTokenInput = document.getElementById('github-token');
-    const refreshButton = document.getElementById('refresh-button');
     const mangaDataPath = 'data/manga_chapters.json';
     const tokenErrorMessage = document.getElementById('token-error-message');
     const themeSwitcher = document.getElementById('theme-switcher');
@@ -277,8 +276,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Event Listeners ---
-    addMangaForm.addEventListener('submit', handleAddManga);
-    refreshButton.addEventListener('click', loadAndRenderManga);
+    if (addMangaForm) {
+        addMangaForm.addEventListener('submit', handleAddManga);
+    }
+
+    // Initial Load
+    loadAndRenderManga();
 
     // --- Theme Switching Logic ---
     const THEME_STORAGE_KEY = 'mangaFetcherTheme';
@@ -339,9 +342,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Apply saved background theme on load or default
     const savedBgTheme = localStorage.getItem(BG_THEME_STORAGE_KEY) || 'default';
     applyBgTheme(savedBgTheme);
-
-    // --- Initial Load ---
-    loadAndRenderManga(); 
 
     // Load token from localStorage on page load
     const savedToken = localStorage.getItem('githubToken');

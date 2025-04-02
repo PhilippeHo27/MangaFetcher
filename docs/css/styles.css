@@ -11,6 +11,19 @@
     --button-shadow: 3px 3px 0px var(--border-color);
     --button-hover-shadow: 4px 4px 0px var(--accent-color);
     --link-hover-color: var(--accent-color);
+    --table-bg-color: #ffffff;
+    --table-border-color: #000000;
+    --table-header-bg-color: var(--accent-color);
+    --text-color-dark: #000000;
+    --table-row-even-bg-color: #f2f2f2;
+    --table-row-odd-bg-color: #ffffff;
+    --read-row-bg-color: #e0e0e0;
+    --read-row-text-color: #555;
+    --read-link-color: #555;
+    --link-color: var(--primary-color);
+    --link-hover-color: var(--accent-color);
+    --text-color-muted: #555;
+    --header-text-color: var(--primary-color);
 }
 
 body {
@@ -29,6 +42,12 @@ h1, h2 {
     text-align: center;
     margin-bottom: 1em;
     font-weight: bold;
+}
+
+h2 {
+    font-size: 1.6em;
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 0.3rem;
 }
 
 header {
@@ -155,72 +174,111 @@ main {
 
  .table-container {
      overflow-x: auto; /* Allows table to be scrolled horizontally if needed */
+     margin-top: 1rem;
+     background-color: var(--table-bg-color);
+     padding: 1rem;
+     border-radius: var(--border-radius);
+     box-shadow: var(--shadow-light);
  }
 
- table {
+ table#manga-table {
      width: 100%;
      border-collapse: collapse;
-     border: var(--border-width) solid var(--border-color);
+     background-color: var(--table-bg-color);
  }
 
- th, td {
-     border: var(--border-width) solid var(--border-color);
-     padding: 0.75em;
+ table#manga-table th,
+ table#manga-table td {
+     padding: 0.8rem 1rem;
+     border-bottom: 1px solid var(--table-border-color);
      text-align: left;
      vertical-align: middle;
  }
 
- thead {
-     background-color: var(--accent-color); /* Accent color controls thead BG */
-     color: var(--primary-color); /* Text color still primary (usually black) */
+ table#manga-table th {
+     background-color: var(--table-header-bg-color);
+     color: var(--text-color-dark);
+     font-weight: bold; /* Make headers bold */
+     font-size: 1.1em; /* Increase header font size */
+ }
+
+ /* Manga Name Styling */
+ table#manga-table tbody tr td:first-child {
      font-weight: bold;
+     font-size: 1.15em; /* Make manga name slightly larger */
  }
 
- tbody tr:nth-child(even) {
-     background-color: #f2f2f2; /* Slight alternating background for readability */
+ /* Row striping and read/unread status */
+ table#manga-table tbody tr:nth-child(even) {
+     background-color: var(--table-row-even-bg-color);
  }
 
- tbody tr.is-read {
-     background-color: #e0e0e0; /* Style for read items */
-     color: #555;
+ table#manga-table tbody tr:nth-child(odd) {
+     background-color: var(--table-row-odd-bg-color); /* Ensure odd rows have a defined background */
  }
 
- tbody tr.is-read td a {
-     color: #555;
+ table#manga-table tbody tr.is-read {
+     background-color: var(--read-row-bg-color) !important; /* Use !important to override nth-child */
+     color: var(--read-row-text-color);
  }
 
- td a {
-     color: var(--primary-color);
-     text-decoration: underline;
-     font-weight: bold;
+ table#manga-table tbody tr.is-read td {
+     opacity: 0.7;
  }
 
- td a:hover {
-     color: var(--link-hover-color);
+ table#manga-table tbody tr.is-read a {
+     color: var(--read-link-color);
+ }
+
+ /* Style links within table */
+ table#manga-table a {
+     color: var(--link-color);
      text-decoration: none;
+     transition: color 0.2s ease;
  }
 
- td .btn {
-     padding: 0.25em 0.5em;
-     margin-right: 0.5em;
-     margin-top: 0;
-     font-size: 0.9em;
+ table#manga-table a:hover {
+     color: var(--link-hover-color);
+     text-decoration: underline;
  }
 
- .note {
+ /* Style buttons within table */
+ table#manga-table .btn-read {
+     padding: 0.3rem 0.6rem;
      font-size: 0.85em;
-     color: #555;
-     margin-top: 1em;
-     border-top: 1px dashed #ccc;
-     padding-top: 0.5em;
  }
 
- .error-message {
-     color: #d9534f; /* A shade of red */
-     font-size: 0.9em;
-     margin-top: 5px;
-     min-height: 1em; /* Reserve space even when empty */
-     display: block; /* Ensure it takes space */
+ /* Small text styling (for timestamps) */
+ table#manga-table small {
+     font-size: 0.8em;
+     color: var(--text-color-muted);
+     display: block; /* Ensure it takes its own line if needed */
+     margin-top: 0.2rem;
+ }
+
+ /* Responsive adjustments */
+ @media (max-width: 768px) {
+     table#manga-table th,
+     table#manga-table td {
+         padding: 0.6rem 0.8rem;
+         font-size: 0.9em; /* Adjust font size for smaller screens */
+     }
+
+     table#manga-table tbody tr td:first-child {
+         font-size: 1.05em; /* Adjust manga name size for smaller screens */
+     }
+
+     .container {
+         padding: 0.5rem;
+     }
+
+     .card {
+         padding: 0.8rem;
+     }
+
+     h2 {
+         font-size: 1.4em; /* Adjust section header size */
+     }
  }
 
  footer {
@@ -310,40 +368,4 @@ main {
      /* A simple outline might be better for contrast */
      outline: 2px solid var(--primary-color);
      outline-offset: -4px;
- }
-
- /* Responsive adjustments */
- @media (max-width: 600px) {
-     header h1 {
-         font-size: 2em;
-     }
-
-     main {
-         width: 95%;
-         margin: 1em auto;
-     }
-
-     .card {
-         padding: 1em;
-         box-shadow: 3px 3px 0px var(--border-color);
-     }
-
-     .btn {
-         width: 100%;
-         text-align: center;
-         padding: 0.75em 1em;
-     }
-
-     .refresh-btn {
-         width: auto;
-         display: block;
-         margin-left: auto;
-         margin-right: auto;
-     }
-
-     .form-group.selector-type {
-         flex-direction: column;
-         align-items: flex-start;
-         gap: 0.5em;
-     }
  }
