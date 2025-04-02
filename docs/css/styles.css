@@ -397,3 +397,37 @@ main {
      outline: 2px solid var(--primary-color);
      outline-offset: -4px;
  }
+
+ #tracked-manga-section .tracked-manga-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem; /* Reduced margin */
+}
+
+.tracked-manga-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+#update-read-status-button {
+    font-size: 0.85em;
+    padding: 0.4em 0.8em;
+}
+
+#update-read-status-button.has-changes {
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+}
+
+#update-read-status-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.status-message {
+    font-size: 0.85em;
+    color: var(--text-color-muted);
+    display: none;
+}

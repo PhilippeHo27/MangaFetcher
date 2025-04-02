@@ -230,7 +230,47 @@ document.addEventListener('DOMContentLoaded', () => {
         // Potentially refresh list after a short delay, though it won't show the new manga yet
     }
 
-    // Function to handle clicking 'Mark Read/Unread' buttons (simulated)
+    // Function to save read statuses to localStorage
+    function saveReadStatus(mangaId, isRead) {
+        const readStatuses = loadReadStatuses();
+        readStatuses[mangaId] = isRead;
+        localStorage.setItem('readStatuses', JSON.stringify(readStatuses));
+        
+        // Track changes for later commit
+        const pendingChanges = loadPendingChanges();
+        pendingChanges[mangaId] = isRead;
+        localStorage.setItem('pendingReadChanges', JSON.stringify(pendingChanges));
+        
+        // Show the update button if we have pending changes
+        updatePendingChangesUI();
+    }
+
+    // Function to load pending changes
+    function loadPendingChanges() {
+        const pendingChanges = localStorage.getItem('pendingReadChanges');
+        return pendingChanges ? JSON.parse(pendingChanges) : {};
+    }
+    
+    // Function to update UI based on pending changes
+    function updatePendingChangesUI() {
+        const pendingChanges = loadPendingChanges();
+        const pendingCount = Object.keys(pendingChanges).length;
+        const updateButton = document.getElementById('update-read-status-button');
+        
+        if (updateButton) {
+            if (pendingCount > 0) {
+                updateButton.textContent = `Update List (${pendingCount} change${pendingCount > 1 ? 's' : ''})`;
+                updateButton.classList.add('has-changes');
+                updateButton.disabled = false;
+            } else {
+                updateButton.textContent = 'Update List';
+                updateButton.classList.remove('has-changes');
+                updateButton.disabled = true;
+            }
+        }
+    }
+
+    // Function to handle clicking 'Mark Read/Unread' buttons
     function handleMarkRead(event) {
         if (!event.target.classList.contains('btn-read')) return; // Ignore clicks not on the button
 
@@ -238,22 +278,128 @@ document.addEventListener('DOMContentLoaded', () => {
         const mangaId = parseInt(button.dataset.id, 10);
         const row = button.closest('tr');
         const isCurrentlyRead = row.classList.contains('is-read');
-        const markAsAction = isCurrentlyRead ? 'unread' : 'read'; // Determine the script action
         const markAsStatus = !isCurrentlyRead;
 
-
-        console.log(`Simulating Mark as ${markAsAction} for ID:`, mangaId);
-        alert(`UI updated to '${markAsAction}'. Run 'python backend/MangaScraper.py mark --id ${mangaId}${isCurrentlyRead ? ' --unread' : ''}' to save permanently.`);
-
-        // --- Simulation --- 
-        // In a real app, you'd send a request (PUT/POST) to a backend endpoint.
-        // Here, we just update the UI directly.
+        console.log(`Marking manga ID ${mangaId} as ${markAsStatus ? 'read' : 'unread'}`);
+        
+        // Update UI
         row.classList.toggle('is-read');
         button.textContent = markAsStatus ? 'Mark Unread' : 'Mark Read';
-        // Update the status cell text
-        const statusCell = row.cells[2]; 
-        if (statusCell) {
-            statusCell.textContent = markAsStatus ? 'Read' : 'Unread';
+        
+        // Save to localStorage and track for later commit
+        saveReadStatus(mangaId, markAsStatus);
+    }
+
+    // Function to commit pending read status changes to GitHub
+    async function commitReadStatusChanges() {
+        const pendingChanges = loadPendingChanges();
+        if (Object.keys(pendingChanges).length === 0) {
+            alert('No changes to commit.');
+            return;
+        }
+        
+        const token = githubTokenInput.value.trim();
+        if (!token) {
+            alert('GitHub token is required to update read statuses.');
+            return;
+        }
+        
+        const updateStatusMessage = document.getElementById('update-status-message');
+        if (updateStatusMessage) {
+            updateStatusMessage.textContent = 'Preparing to commit changes...';
+            updateStatusMessage.style.display = 'block';
+        }
+        
+        // GitHub API details
+        const githubUser = 'PhilippeHo27';
+        const githubRepo = 'MangaFetcher';
+        const githubFilePath = 'data/read_status.json';
+        const githubApiUrl = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/${githubFilePath}`;
+        
+        try {
+            // 1. Try to fetch existing file
+            let currentSha = '';
+            let currentContent = {};
+            
+            try {
+                const response = await fetch(githubApiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const fileData = await response.json();
+                    currentSha = fileData.sha;
+                    
+                    // Decode Base64 content
+                    const decodedContent = atob(fileData.content);
+                    currentContent = JSON.parse(decodedContent);
+                } else if (response.status !== 404) {
+                    // If error is not 404 (file not found), throw error
+                    throw new Error(`GitHub API fetch failed: ${response.status}`);
+                }
+                // If 404, we'll create a new file
+            } catch (error) {
+                console.log('File might not exist yet or other error:', error);
+                // Continue with empty content if file doesn't exist
+            }
+            
+            // 2. Merge current content with pending changes
+            const updatedContent = { ...currentContent, ...pendingChanges };
+            
+            // 3. Encode and commit
+            if (updateStatusMessage) {
+                updateStatusMessage.textContent = 'Committing changes to GitHub...';
+            }
+            
+            const updatedContentString = JSON.stringify(updatedContent, null, 2);
+            const updatedContentBase64 = btoa(updatedContentString);
+            
+            const commitMessage = `Update read status for ${Object.keys(pendingChanges).length} manga`;
+            
+            const commitData = {
+                message: commitMessage,
+                content: updatedContentBase64
+            };
+            
+            // Add SHA if we're updating an existing file
+            if (currentSha) {
+                commitData.sha = currentSha;
+            }
+            
+            const commitResponse = await fetch(githubApiUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(commitData)
+            });
+            
+            if (!commitResponse.ok) {
+                throw new Error(`GitHub API commit failed: ${commitResponse.status}`);
+            }
+            
+            // Clear pending changes on success
+            localStorage.removeItem('pendingReadChanges');
+            updatePendingChangesUI();
+            
+            if (updateStatusMessage) {
+                updateStatusMessage.textContent = 'Read statuses updated successfully!';
+                setTimeout(() => {
+                    updateStatusMessage.style.display = 'none';
+                }, 3000);
+            }
+            
+        } catch (error) {
+            console.error('Error committing read status changes:', error);
+            if (updateStatusMessage) {
+                updateStatusMessage.textContent = `Error: ${error.message}`;
+            }
         }
     }
 
@@ -279,9 +425,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (addMangaForm) {
         addMangaForm.addEventListener('submit', handleAddManga);
     }
+    
+    // Add event listener for the Update List button
+    const updateButton = document.getElementById('update-read-status-button');
+    if (updateButton) {
+        updateButton.addEventListener('click', commitReadStatusChanges);
+    }
 
     // Initial Load
     loadAndRenderManga();
+    updatePendingChangesUI(); // Update UI based on any pending changes
 
     // --- Theme Switching Logic ---
     const THEME_STORAGE_KEY = 'mangaFetcherTheme';
