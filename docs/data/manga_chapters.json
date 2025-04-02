@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "id": "chainsawman",
+    "name": "Chainsaw Man",
+    "source_url": "https://mangaplus.shueisha.co.jp/titles/100037",
+    "latest_chapter_text": "#158 Dog Lesson",
+    "latest_chapter_url": "https://mangaplus.shueisha.co.jp/viewer/1019700",
+    "last_scraped_at": "2025-04-02T01:40:00Z"
+  },
+  {
+    "id": "onepiece",
+    "name": "One Piece",
+    "source_url": "https://mangaplus.shueisha.co.jp/titles/100020",
+    "latest_chapter_text": "#1100 Unknown Chapter Title",
+    "latest_chapter_url": null,
+    "last_scraped_at": "2025-04-02T01:40:00Z"
+  },
+  {
+    "id": "3",
+    "name": "Example Manga (No Link)",
+    "source_url": "http://example.com/manga3",
+    "latest_chapter_text": "Chapter 55",
+    "latest_chapter_url": null,
+    "last_scraped_at": "2025-04-02T01:40:00Z"
+  },
+   {
+    "id": "4",
+    "name": "Manga with Error",
+    "source_url": "http://example.com/manga4",
+    "latest_chapter_text": "Error",
+    "latest_chapter_url": null,
+    "last_scraped_at": "2025-04-02T01:40:00Z"
+  }
+]

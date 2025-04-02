@@ -7,32 +7,43 @@ import os
 from lxml import etree
 from urllib.parse import urljoin
 
-# Create data directory if it doesn't exist
-data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
-os.makedirs(data_dir, exist_ok=True)
+# --- Configuration: Define paths relative to the project root --- #
+# Assumes the script is run from the repository root or the path is adjusted in the GitHub workflow
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SOURCES_FILE_PATH = os.path.join(PROJECT_ROOT, 'docs', 'data', 'manga_sources.json')
+CHAPTERS_FILE_PATH = os.path.join(PROJECT_ROOT, 'docs', 'data', 'manga_chapters.json')
+os.makedirs(os.path.dirname(SOURCES_FILE_PATH), exist_ok=True) # Ensure directory exists
+# --- End Configuration --- #
 
-def load_manga_sources(filename='manga_sources.json'):
-    filepath = os.path.join(data_dir, filename)
-    # Create empty file if it doesn't exist
+def load_manga_sources(filepath=SOURCES_FILE_PATH):
+    # Ensure the sources file exists, creating it if necessary
     if not os.path.exists(filepath):
-        with open(filepath, 'w') as f:
-            f.write('[]')  # Write valid empty JSON array
+        print(f"Sources file not found at {filepath}. Creating an empty file.")
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump([], f) # Write empty JSON list
+        return []
     
-    with open(filepath, 'r') as f:
-        try:
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
             return json.load(f)
-        except json.JSONDecodeError:
-            print(f"Error loading {filename}. Creating a new empty file.")
-            with open(filepath, 'w') as f:
-                f.write('[]')
-            return []
+    except json.JSONDecodeError:
+        print(f"Error decoding JSON from {filepath}. Returning empty list.")
+        return []
+    except FileNotFoundError:
+        print(f"Sources file not found at {filepath}. Returning empty list.")
+        return []
 
-def save_manga_chapters(chapters, filename='manga_chapters.json'):
-    filepath = os.path.join(data_dir, filename)
+def save_manga_chapters(chapters_data, filepath=CHAPTERS_FILE_PATH):
+    """Saves the final structured manga chapter data (flat list) to the JSON file."""
     # Ensure the directory exists before writing
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
-    with open(filepath, 'w') as f:
-        json.dump(chapters, f, indent=2)
+    try:
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(chapters_data, f, indent=2, ensure_ascii=False)
+        print(f"Successfully saved updated chapter data to {filepath}")
+    except Exception as e:
+        print(f"Error saving manga chapters to {filepath}: {e}")
 
 def scrape_manga(url, selector, use_xpath=False):
     """
@@ -89,7 +100,7 @@ def scrape_manga(url, selector, use_xpath=False):
                     chapter_url = anchor_tag['href']
                     # Make URL absolute if it's relative
                     if chapter_url and not chapter_url.startswith(('http://', 'https://')):
-                         chapter_url = urljoin(url, chapter_url)
+                        chapter_url = urljoin(url, chapter_url)
 
                 return {"text": chapter_text, "url": chapter_url, "scrapedAt": now_iso}
             else:
@@ -110,259 +121,44 @@ def scrape_manga(url, selector, use_xpath=False):
 def update_manga_chapters():
     sources = load_manga_sources()
     
-    # Try to load existing chapters data
-    existing_chapters_data = []
-    try:
-        chapters_file = os.path.join(data_dir, 'manga_chapters.json')
-        if os.path.exists(chapters_file) and os.path.getsize(chapters_file) > 0: # Check if file exists and is not empty
-            with open(chapters_file, 'r') as f:
-                try:
-                    existing_chapters_data = json.load(f)
-                    # Validate data structure slightly
-                    if not isinstance(existing_chapters_data, list):
-                        print(f"Warning: {chapters_file} does not contain a JSON list. Resetting.")
-                        existing_chapters_data = []
-                except json.JSONDecodeError:
-                    print(f"Error decoding JSON from {chapters_file}. Starting fresh.")
-                    existing_chapters_data = []
-        else:
-            # Create manga_chapters.json if it doesn't exist or is empty
-            if not os.path.exists(chapters_file) or os.path.getsize(chapters_file) == 0:
-                 with open(chapters_file, 'w') as f:
-                    f.write('[]') # Initialize with empty JSON array
-            existing_chapters_data = []
-    except Exception as e: # Catch potential errors during file loading
-        print(f"Error loading existing chapters data: {e}. Starting fresh.")
-        existing_chapters_data = []
+    if not sources:
+        print("No sources found. Exiting scrape process.")
+        save_manga_chapters([]) # Save an empty list if no sources
+        return
 
-    # Create lookup for existing data by manga ID
-    existing_lookup = {manga_data['id']: manga_data for manga_data in existing_chapters_data if isinstance(manga_data, dict) and 'id' in manga_data}
-
-    updated_chapters_data = []
-    three_weeks_ago = datetime.now() - timedelta(weeks=3)
+    final_output_data = [] # This will hold the flat list for the frontend
 
     for source in sources:
-        # Ensure source is a dictionary and has necessary keys
-        if isinstance(source, dict) and 'id' in source and 'name' in source and 'url' in source and 'selector' in source:
-            manga_id = source['id']
+        # Basic validation for source entry
+        if isinstance(source, dict) and all(k in source for k in ['name', 'url', 'selector']):
+            manga_name = source['name']
+            source_url = source['url']
+            # Use manga name as a simple ID if 'id' isn't present, otherwise use 'id'
+            manga_id = source.get('id', manga_name) 
             if source.get('isActive', True):
-                print(f"Scraping {source['name']} from {source['url']}...")
-                scraped_chapter_info = scrape_manga(source['url'], source['selector'], source.get('use_xpath', False))
+                print(f"Scraping {manga_name} from {source_url}...")
+                scrape_result = scrape_manga(source_url, source['selector'], source.get('use_xpath', False))
 
-                # Get existing data for this manga, or create a new entry
-                current_manga_data = existing_lookup.get(manga_id, {
-                    'id': manga_id,
-                    'title': source['name'],
-                    'sourceUrl': source['url'],
-                    'chapters': [],
-                    'isRead': False,
-                    'lastUpdated': datetime.now().isoformat()
-                })
-
-                # Update basic info from source (in case name/url changed)
-                current_manga_data['title'] = source['name']
-                current_manga_data['sourceUrl'] = source['url']
-                current_manga_data['lastUpdated'] = datetime.now().isoformat()
-
-                # Ensure 'chapters' list exists and is a list
-                if not isinstance(current_manga_data.get('chapters'), list):
-                     current_manga_data['chapters'] = []
-
-                existing_chapters_list = current_manga_data['chapters']
-                is_new_chapter = True
-
-                # Check if the scraped chapter is already the latest one we have stored
-                if existing_chapters_list:
-                    latest_stored_chapter = existing_chapters_list[-1] # Get the last appended chapter
-                    # Compare based on URL if available, otherwise text (handle None URLs)
-                    if scraped_chapter_info['url'] and latest_stored_chapter.get('url') == scraped_chapter_info['url']:
-                        is_new_chapter = False
-                    elif not scraped_chapter_info['url'] and scraped_chapter_info['text'] != "Error" and scraped_chapter_info['text'] != "Unknown" and latest_stored_chapter.get('text') == scraped_chapter_info['text']:
-                        is_new_chapter = False
-
-                # Add the chapter if it's new and not an error/unknown
-                if is_new_chapter and scraped_chapter_info['text'] not in ("Error", "Unknown"):
-                    print(f"  -> New chapter found for {source['name']}: {scraped_chapter_info['text']}")
-                    existing_chapters_list.append(scraped_chapter_info) # Append the new chapter info
-                    current_manga_data['isRead'] = False # New chapter means it's unread
-                elif scraped_chapter_info['text'] in ("Error", "Unknown"):
-                     print(f"  -> Scrape result for {source['name']} was '{scraped_chapter_info['text']}'. No chapter added.")
-                else:
-                     print(f"  -> Chapter for {source['name']} hasn't changed.")
-
-                 # Pruning: If manga is unread, remove chapters older than 3 weeks, keeping at least the latest one
-                if not current_manga_data['isRead'] and len(existing_chapters_list) > 1:
-                    chapters_to_keep = []
-                    # Always keep the latest chapter
-                    latest_chap = existing_chapters_list[-1]
-                    chapters_to_keep.append(latest_chap)
-                    # Check older chapters
-                    for chap in reversed(existing_chapters_list[:-1]): # Iterate from second-latest backwards
-                        try:
-                            scraped_time = datetime.fromisoformat(chap['scrapedAt'])
-                            if scraped_time >= three_weeks_ago:
-                                chapters_to_keep.insert(0, chap) # Add back if recent
-                        except (ValueError, TypeError):
-                             print(f"  -> Warning: Invalid date format '{chap.get('scrapedAt')}' for chapter '{chap.get('text')}'. Keeping it.")
-                             chapters_to_keep.insert(0, chap) # Keep if date is invalid
-                    
-                    if len(chapters_to_keep) < len(existing_chapters_list):
-                        print(f"  -> Pruning old chapters for {source['name']}. Kept {len(chapters_to_keep)} chapters.")
-                        current_manga_data['chapters'] = chapters_to_keep
-
-                updated_chapters_data.append(current_manga_data)
+                # Prepare the output dictionary for this manga
+                manga_output = {
+                    "id": manga_id, # Use ID from source or fallback to name
+                    "name": manga_name,
+                    "source_url": source_url, # Include the original source URL
+                    "latest_chapter_text": scrape_result['text'],
+                    "latest_chapter_url": scrape_result['url'],
+                    "last_scraped_at": scrape_result['scrapedAt']
+                }
+                final_output_data.append(manga_output)
+                print(f"  -> Result for {manga_name}: {scrape_result['text']} @ {scrape_result['url'] or 'No URL'}")
             else:
-                # If source is inactive, but we have data for it, keep the existing data
-                if manga_id in existing_lookup:
-                    updated_chapters_data.append(existing_lookup[manga_id])
-
-    # Add back any existing manga data that wasn't in the current sources (e.g., if source was deleted but data remains)
-    existing_ids = {m['id'] for m in updated_chapters_data}
-    for manga_id, manga_data in existing_lookup.items():
-        if manga_id not in existing_ids:
-             updated_chapters_data.append(manga_data)
-
-    save_manga_chapters(updated_chapters_data)
-    return updated_chapters_data
-
-def add_manga(name, url, selector, use_xpath=False):
-    sources = load_manga_sources()
-    new_id = max([manga.get('id', 0) for manga in sources], default=0) + 1
-    sources.append({
-        'id': new_id,
-        'name': name,
-        'url': url,
-        'selector': selector,
-        'use_xpath': use_xpath,
-        'isActive': True
-    })
-    
-    sources_filepath = os.path.join(data_dir, 'manga_sources.json')
-    with open(sources_filepath, 'w') as f:
-        json.dump(sources, f, indent=2)
-    print(f"Added manga source: {name} (ID: {new_id})")
-
-    # Also add a basic entry to manga_chapters.json immediately
-    chapters_file = os.path.join(data_dir, 'manga_chapters.json')
-    all_manga_data = []
-    if os.path.exists(chapters_file) and os.path.getsize(chapters_file) > 0:
-        try:
-            with open(chapters_file, 'r') as f:
-                all_manga_data = json.load(f)
-            if not isinstance(all_manga_data, list):
-                 all_manga_data = []
-        except (json.JSONDecodeError, IOError) as e:
-            print(f"Warning: Could not read or parse {chapters_file} before adding new entry: {e}")
-            all_manga_data = []
-
-    # Check if manga ID already exists (shouldn't, but good practice)
-    if not any(m.get('id') == new_id for m in all_manga_data if isinstance(m, dict)):
-        all_manga_data.append({
-            'id': new_id,
-            'title': name,
-            'sourceUrl': url,
-            'chapters': [], # Start with empty chapters list
-            'isRead': False,
-            'lastUpdated': datetime.now().isoformat(),
-             # Add a status field for the UI?
-            'status': 'Pending First Scrape' # Indicates it hasn't been scraped yet
-        })
-        save_manga_chapters(all_manga_data)
-        print(f"Added pending entry for {name} (ID: {new_id}) to chapters data.")
-
-    return new_id # Return the ID of the newly added manga
-
-def mark_manga_read(manga_id, is_read=True):
-    """Marks a specific manga as read or unread in manga_chapters.json.
-       If marking as read, it also clears out all but the most recent chapter."""
-    chapters_file = os.path.join(data_dir, 'manga_chapters.json')
-    chapters = []
-    try:
-        if os.path.exists(chapters_file) and os.path.getsize(chapters_file) > 0:
-            with open(chapters_file, 'r') as f:
-                chapters = json.load(f)
+                print(f"Skipping inactive source: {manga_name}")
         else:
-             print(f"Warning: {chapters_file} not found or empty. Cannot mark as read.")
-             return False # Indicate failure
+            print(f"Warning: Skipping invalid source entry: {source}")
 
-    except json.JSONDecodeError:
-        print(f"Error decoding JSON from {chapters_file}. Cannot mark as read.")
-        return False # Indicate failure
-    except Exception as e:
-        print(f"Error loading {chapters_file}: {e}")
-        return False # Indicate failure
+    save_manga_chapters(final_output_data) # Save the flat list
 
-    updated = False
-    for manga_data in chapters:
-         # Ensure manga_data is a dictionary and has an 'id' key
-         if isinstance(manga_data, dict) and manga_data.get('id') == manga_id:
-            manga_data['isRead'] = is_read
-            print(f"Marked manga ID {manga_id} as {'read' if is_read else 'unread'}.")
-
-            # If marking as read and chapters list exists and has more than one entry, prune it
-            if is_read and isinstance(manga_data.get('chapters'), list) and len(manga_data['chapters']) > 1:
-                latest_chapter = manga_data['chapters'][-1]
-                manga_data['chapters'] = [latest_chapter]
-                print(f"  -> Cleared older chapters for manga ID {manga_id}, kept the latest.")
-
-            updated = True
-            break # Assuming unique IDs
-
-    if updated:
-        save_manga_chapters(chapters)
-        return True # Indicate success
-    else:
-        print(f"Manga ID {manga_id} not found in chapters data.")
-        return False # Indicate failure
-
-def clear_manga_chapters(manga_id):
-    """Removes all but the latest chapter for a given manga ID."""
-    chapters_file = os.path.join(data_dir, 'manga_chapters.json')
-    all_manga_data = []
-    try:
-        if os.path.exists(chapters_file) and os.path.getsize(chapters_file) > 0:
-            with open(chapters_file, 'r') as f:
-                all_manga_data = json.load(f)
-        else:
-             print(f"Warning: {chapters_file} not found or empty. Cannot clear chapters.")
-             return False # Indicate failure
-
-    except json.JSONDecodeError:
-        print(f"Error decoding JSON from {chapters_file}. Cannot clear chapters.")
-        return False # Indicate failure
-    except Exception as e:
-        print(f"Error loading {chapters_file}: {e}")
-        return False # Indicate failure
-
-    updated = False
-    cleared_count = 0
-    for manga_data in all_manga_data:
-         if isinstance(manga_data, dict) and manga_data.get('id') == manga_id:
-             if isinstance(manga_data.get('chapters'), list) and len(manga_data['chapters']) > 1:
-                 latest_chapter = manga_data['chapters'][-1]
-                 cleared_count = len(manga_data['chapters']) - 1
-                 manga_data['chapters'] = [latest_chapter]
-                 updated = True
-                 break
-             elif isinstance(manga_data.get('chapters'), list) and len(manga_data['chapters']) <= 1:
-                 print(f"Manga ID {manga_id} already has only one or zero chapters. Nothing to clear.")
-                 return True # Indicate success (nothing needed to be done)
-             else:
-                 print(f"Manga ID {manga_id} found, but has no valid chapter list.")
-                 return False # Indicate failure
-
-    if updated:
-        save_manga_chapters(all_manga_data)
-        print(f"Cleared {cleared_count} older chapters for manga ID {manga_id}. Kept the latest.")
-        return True
-    elif cleared_count == 0 and not updated:
-         # Handle case where the loop finished without finding the ID
-         print(f"Manga ID {manga_id} not found in chapters data.")
-         return False
-    else:
-         # Should ideally not be reached if ID was found
-         print(f"Manga ID {manga_id} not found or no chapters to clear.")
-         return False
+# --- Command Line Argument Parsing Logic ---
+# (Keep the existing argparse logic for add, list, test, etc., but update `update` action)
 
 def list_manga():
     sources = load_manga_sources()
@@ -413,7 +209,7 @@ if __name__ == "__main__":
     parser_test.add_argument('--selector', required=True, help="CSS selector or XPath to test")
     parser_test.add_argument('--xpath', action='store_true', help="Use XPath instead of CSS selector")
 
-     # Mark Read/Unread action
+    # Mark Read/Unread action
     parser_mark = subparsers.add_parser('mark', help='Mark a manga as read or unread')
     parser_mark.add_argument('--id', type=int, required=True, help="Manga ID to mark")
     parser_mark.add_argument('--unread', action='store_true', help="Mark as unread instead of read")
@@ -427,18 +223,31 @@ if __name__ == "__main__":
     if args.action == 'update':
         chapters = update_manga_chapters()
         if chapters: # Check if update returned anything
-             print(f"\nUpdate complete. Checked {len(chapters)} active manga.")
+            print(f"\nUpdate complete. Checked {len(chapters)} active manga.")
         else:
-             print("\nUpdate process finished.") # Handle case where sources might be empty
+            print("\nUpdate process finished.") # Handle case where sources might be empty
     elif args.action == 'add':
-        add_manga(args.name, args.url, args.selector, args.xpath)
+        # The add_manga function is now likely obsolete or needs significant rework
+        # as it relied on the old data structure in manga_chapters.json.
+        # For now, the primary way to update chapters is via `update_manga_chapters` triggered
+        # by the workflow, and adding sources is via the frontend UI.
+        print("The 'add' command is currently not supported. Please use the frontend UI to add manga sources.")
     elif args.action == 'remove':
-        remove_manga(args.id)
+        # The remove_manga function is not implemented in this version
+        print("The 'remove' command is not implemented in this version.")
     elif args.action == 'list':
         list_manga()
     elif args.action == 'test':
         test_selector(args.url, args.selector, args.xpath)
     elif args.action == 'mark':
-         mark_manga_read(args.id, not args.unread) # Pass False if --unread is specified
+        # The mark_manga_read function is now likely obsolete or needs significant rework
+        # as it relied on the old data structure in manga_chapters.json.
+        # For now, the primary way to update chapters is via `update_manga_chapters` triggered
+        # by the workflow, and marking as read is via the frontend UI.
+        print("The 'mark' command is currently not supported. Please use the frontend UI to mark manga as read.")
     elif args.action == 'clear':
-         clear_manga_chapters(args.id)
+        # The clear_manga_chapters function is now likely obsolete or needs significant rework
+        # as it relied on the old data structure in manga_chapters.json.
+        # For now, the primary way to update chapters is via `update_manga_chapters` triggered
+        # by the workflow, and clearing chapters is via the frontend UI.
+        print("The 'clear' command is currently not supported. Please use the frontend UI to clear manga chapters.")

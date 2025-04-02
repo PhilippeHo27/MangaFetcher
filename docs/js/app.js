@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addMangaForm = document.getElementById('add-manga-form');
     const githubTokenInput = document.getElementById('github-token');
     const refreshButton = document.getElementById('refresh-button');
-    const mangaDataPath = 'data/manga_chapters.json';
+    const mangaDataPath = 'docs/data/manga_chapters.json';
     const tokenErrorMessage = document.getElementById('token-error-message');
     const themeSwitcher = document.getElementById('theme-switcher');
     const accentThemeSwitcher = document.getElementById('accent-theme-switcher');
@@ -120,15 +120,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // ** GitHub API Interaction **
         // Replace with your actual username and repo name
-        const githubUser = 'PhilippeHo27'; // FIXME: Replace with your GitHub username
-        const githubRepo = 'MangaFetcher'; // FIXME: Replace with your repo name
-        const filePath = 'data/manga_chapters.json';
-        const apiUrl = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/${filePath}`;
+        const githubUser = 'PhilippeHo27';
+        const githubRepo = 'MangaFetcher';
+        const githubFilePath = 'docs/data/manga_sources.json';
+        const githubApiUrl = `https://api.github.com/repos/${githubUser}/${githubRepo}/contents/${githubFilePath}`;
 
         try {
             // 1. Fetch the current file content and SHA
             tokenErrorMessage.textContent = 'Fetching current manga list...';
-            const response = await fetch(apiUrl, {
+            const response = await fetch(githubApiUrl, {
                 method: 'GET',
                 headers: {
                     'Authorization': `token ${token}`,
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) {
                 if (response.status === 404) {
                     // File doesn't exist yet - handle creation (more complex)
-                    tokenErrorMessage.textContent = 'Error: manga_chapters.json not found. Initial creation via UI not yet supported.';
+                    tokenErrorMessage.textContent = 'Error: manga_sources.json not found. Initial creation via UI not yet supported.';
                     // TODO: Implement file creation logic if needed
                 } else if (response.status === 401) {
                      tokenErrorMessage.textContent = 'Error: Invalid GitHub token or insufficient permissions.';
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tokenErrorMessage.textContent = 'Committing changes to GitHub...';
             const commitMessage = `Add manga: ${name}`;
 
-            const commitResponse = await fetch(apiUrl, {
+            const commitResponse = await fetch(githubApiUrl, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `token ${token}`,
@@ -335,155 +335,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initial Load ---
     loadAndRenderManga(); 
 
-    // --- GitHub API Interaction (INSECURE - For Demo Only) ---
-    async function commitChanges(newMangaDetails) {
-        const token = githubTokenInput.value.trim();
-        const repo = 'MangaFetcher'; // Deduced from URL
-        const owner = 'PhilippeHo27'; // Deduced from URL
-        const path = 'data/pending_changes.json'; // The file to update
-        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-        const commitMessage = `Frontend: Add new manga source - ${newMangaDetails.name}`;
-
-        if (!token) {
-            displayTokenError('GitHub token is required.');
-            return Promise.reject(new Error('GitHub token is required.')); // Reject the promise
-        }
-
-        try {
-            // 1. Get current file content and SHA
-            let currentSha = null;
-            let currentContent = '[]'; // Default to empty array if file doesn't exist
-            try {
-                clearTokenError(); // Clear previous errors
-                const response = await fetch(apiUrl, {
-                    headers: {
-                        'Authorization': `token ${token}`,
-                    }
-                });
-                if (response.ok) {
-                    // Save token on successful fetch (implies token is likely valid)
-                    localStorage.setItem('githubToken', token);
-                    const data = await response.json();
-                    currentSha = data.sha;
-                    // Content is base64 encoded
-                    currentContent = atob(data.content);
-                } else if (response.status === 401) {
-                    displayTokenError('Invalid GitHub token.');
-                    throw new Error(`GitHub API error (GET): 401 Unauthorized`);
-                } else if (response.status === 403) {
-                    displayTokenError('Token lacks permissions.');
-                    throw new Error(`GitHub API error (GET): 403 Forbidden`);
-                } else if (response.status === 404) {
-                    // Can be file not found or repo/owner invalid
-                    displayTokenError('Repo/File not found or token invalid.');
-                    throw new Error(`GitHub API error (GET): 404 Not Found`);
-                } else if (response.status !== 404) {
-                    // Handle errors other than file not found
-                    displayTokenError(`API Error: ${response.status}`);
-                    throw new Error(`GitHub API error (GET): ${response.status} ${response.statusText}`);
-                }
-                // If 404, currentSha remains null, currentContent remains '[]'
-                // We allow proceeding to try and create the file
-            } catch (fetchError) {
-                console.error('Error fetching current pending_changes.json:', fetchError);
-                // Decide how to handle - maybe allow creating the file if SHA is null?
-                // For now, rethrow or alert user
-                // Display specific token error if already set, otherwise generic
-                if (!tokenErrorMessage.textContent) {
-                    displayTokenError(`Fetch Error: ${fetchError.message}`);
-                }
-                // Rethrow to stop the commit process and be caught by the outer try/catch
-                throw fetchError;
-            }
-
-            // 2. Prepare new content
-            let changes = [];
-            try {
-                changes = JSON.parse(currentContent);
-                if (!Array.isArray(changes)) changes = []; // Ensure it's an array
-            } catch (parseError) {
-                console.error('Error parsing existing pending_changes.json content:', parseError);
-                alert('Warning: Could not parse existing changes file. Starting fresh for this commit.');
-                changes = []; // Reset if parsing fails
-            }
-
-            changes.push(newMangaDetails); // Add the new manga details
-            const newContentBase64 = btoa(JSON.stringify(changes, null, 2)); // Encode to base64, pretty print JSON
-
-            // 3. Commit new content (Create or Update)
-            const commitPayload = {
-                message: commitMessage,
-                content: newContentBase64,
-            };
-            // Include SHA only if updating an existing file
-            if (currentSha) {
-                commitPayload.sha = currentSha;
-            }
-
-            const putResponse = await fetch(apiUrl, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(commitPayload)
-            });
-
-            if (!putResponse.ok) {
-                // Handle specific errors related to token/permissions during PUT
-                if (putResponse.status === 401) {
-                    displayTokenError('Invalid GitHub token.');
-                    throw new Error('GitHub API error (PUT): 401 Unauthorized - Invalid token.');
-                } else if (putResponse.status === 403) {
-                    displayTokenError('Token lacks permissions.');
-                    throw new Error('GitHub API error (PUT): 403 Forbidden - Token lacks permissions.');
-                } else if (putResponse.status === 404) {
-                    // This might happen if the repo/owner was wrong initially
-                    displayTokenError('Repo/Owner not found?');
-                    throw new Error('GitHub API error (PUT): 404 Not Found.');
-                } else if (putResponse.status === 409) {
-                    displayTokenError('Conflict (SHA mismatch?).');
-                    throw new Error('GitHub API error (PUT): 409 Conflict - SHA mismatch or branch issue? Try refreshing.');
-                } else if (putResponse.status === 422) {
-                    displayTokenError('Commit Error (content?).');
-                    throw new Error('GitHub API error (PUT): 422 Unprocessable Entity - Invalid content or commit structure?');
-                } else {
-                    displayTokenError(`API Error: ${putResponse.status}`);
-                    throw new Error(`GitHub API error (PUT): ${putResponse.status} ${putResponse.statusText}`);
-                }
-            }
-
-            console.log('Commit successful:', await putResponse.json());
-            // Optionally clear the form or give user feedback
-        } catch (error) {
-            console.error('Error in commitChanges function:', error);
-            // Ensure specific token errors are displayed if not already
-            if (!tokenErrorMessage.textContent) {
-                displayTokenError(`Commit Error: ${error.message}`);
-            }
-            throw error;
-        }
-    }
-
-    function displayError(message) {
-        mangaTableBody.innerHTML = `<tr><td colspan="5" class="error">${message}</td></tr>`;
-    }
-
-    function displayTokenError(message) {
-        if (tokenErrorMessage) {
-            tokenErrorMessage.textContent = message;
-        } else {
-            console.error("Token error message element not found");
-        }
-    }
-
-    function clearTokenError() {
-        if (tokenErrorMessage) {
-            tokenErrorMessage.textContent = '';
-        }
-    }
-
-    // --- Initialization ---
     // Load token from localStorage on page load
     const savedToken = localStorage.getItem('githubToken');
     if (savedToken && githubTokenInput) {
