@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "name": "Chainsaw Man",
+    "url": "https://readchainsaw-man.com/",
+    "selector": "/html/body/div/div/div/div/div/main/article/div/div/div/ul/li/ul/li/a",
+    "use_xpath": true,
+    "isActive": true
+  }
+]
