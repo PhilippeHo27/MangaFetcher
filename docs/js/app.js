@@ -83,7 +83,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = document.getElementById('manga-name').value.trim();
         const url = document.getElementById('manga-url').value.trim();
         const selector = document.getElementById('manga-selector').value.trim();
-        const isXpath = document.getElementById('selector-xpath').checked;
+        const selectorTypeInput = document.querySelector('input[name="selector-type"]:checked');
+
+        if (!selectorTypeInput) {
+            console.error("No selector type (CSS/XPath) is checked.");
+            alert("Please select a selector type (CSS or XPath).");
+            return; // Stop execution if no type is selected
+        }
+        const selectorType = selectorTypeInput.value;
 
         if (!name || !url || !selector) {
             alert('Please fill in all fields.');
@@ -95,12 +102,12 @@ document.addEventListener('DOMContentLoaded', () => {
             name: name,
             url: url,
             selector: selector,
-            use_xpath: isXpath,
+            use_xpath: selectorType === 'xpath',
             isActive: true
         };
 
         console.log('Attempting to add (UI only):', newMangaSource);
-        alert(`Manga "${name}" added to UI (temporary). Run 'python backend/MangaScraper.py add --name "${name}" --url "${url}" --selector "${selector}" ${isXpath ? '--xpath' : ''}' to save permanently.`);
+        alert(`Manga "${name}" added to UI (temporary). Run 'python backend/MangaScraper.py add --name "${name}" --url "${url}" --selector "${selector}" ${selectorType === 'xpath' ? '--xpath' : ''}' to save permanently.`);
 
         // --- Simulation --- 
         // In a real app, you'd POST this to a backend endpoint.
@@ -457,7 +464,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = document.getElementById('manga-name').value.trim();
         const url = document.getElementById('manga-url').value.trim();
         const selector = document.getElementById('manga-selector').value.trim();
-        const selectorType = document.querySelector('input[name="selectorType"]:checked').value;
+        const selectorTypeInput = document.querySelector('input[name="selector-type"]:checked');
+
+        if (!selectorTypeInput) {
+            console.error("No selector type (CSS/XPath) is checked.");
+            alert("Please select a selector type (CSS or XPath).");
+            return; // Stop execution if no type is selected
+        }
+        const selectorType = selectorTypeInput.value;
 
         if (!name || !url || !selector) {
             alert('Please fill in all fields.');
@@ -486,7 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id: -1, // Temporary ID for UI
             title: name,
             sourceUrl: url,
-            chapters: [],
+            chapters: [], // Start with empty chapters
             isRead: false,
             status: 'Pending', // Special status for UI
             lastUpdated: new Date().toISOString()
