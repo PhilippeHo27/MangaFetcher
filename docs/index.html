@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manga Tracker</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/themes.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -65,10 +64,8 @@
                 </div>
                 <div class="form-group token-group">
                     <label for="github-token">GitHub Token:</label>
-                    <input type="password" id="github-token" name="github-token"
-                           placeholder="Generate at Profile > Settings > Developer settings > Personal access tokens (classic)"
-                           required>
-                    <span id="token-error-message" class="error-message" style="display: none;"></span>
+                    <input type="password" id="github-token" name="github-token" placeholder="Generate at Profile > Settings > Developer settings > Personal access tokens (classic)" required autocomplete="current-password">
+                    <span id="token-error-message" class="error-message"></span>
                 </div>
                 <button type="submit" class="btn">Add Manga</button>
             </form>
@@ -80,6 +77,21 @@
             </p>
         </section>
     </main>
+
+    <!-- Theme Controls (Positioned via CSS) -->
+    <div id="accent-theme-switcher" class="theme-switcher accent-switcher">
+        <button class="theme-button" data-theme="default" title="Default (Yellow)" style="background-color: #ffff00;"></button>
+        <button class="theme-button" data-theme="red" title="Red" style="background-color: #FF5E5E;"></button>
+        <button class="theme-button" data-theme="cyan" title="Cyan" style="background-color: #42C1D6;"></button>
+        <button class="theme-button" data-theme="magenta" title="Magenta" style="background-color: #DF7CFF;"></button>
+        <button class="theme-button" data-theme="orange" title="Orange" style="background-color: #FFB445;"></button>
+        <button class="theme-button" data-theme="bright-green" title="Bright Green" style="background-color: #01FF76;"></button>
+    </div>
+    <div id="bg-theme-switcher" class="theme-switcher bg-switcher">
+        <button class="theme-button" data-bg-theme="default" title="Default BG (White)" style="background-color: #ffffff;"></button>
+        <button class="theme-button" data-bg-theme="cyan-bg" title="Cyan BG" style="background-color: #42C1D6;"></button>
+        <button class="theme-button" data-bg-theme="yellow-bg" title="Yellow BG" style="background-color: #FFE332;"></button>
+    </div>
 
     <template id="manga-row-template">
         <tr>

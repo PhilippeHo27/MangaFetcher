@@ -285,61 +285,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Theme Switching Logic ---
     const THEME_STORAGE_KEY = 'mangaFetcherTheme';
-    const BG_THEME_STORAGE_KEY = 'mangaFetcherBgTheme';
+    const ACCENT_THEME_STORAGE_KEY = 'mangaFetcherAccentTheme'; // Separate key for accent
+    const BG_THEME_STORAGE_KEY = 'mangaFetcherBgTheme'; // Separate key for background
 
-    function applyTheme(themeName) {
-        document.documentElement.setAttribute('data-theme', themeName);
-        // Update active button state
-        const currentActive = accentThemeSwitcher.querySelector('.theme-button.active');
-        if (currentActive) {
-            currentActive.classList.remove('active');
-        }
-        const newActive = accentThemeSwitcher.querySelector(`.theme-button[data-theme="${themeName}"]`);
-        if (newActive) {
-            newActive.classList.add('active');
-        }
-        localStorage.setItem(THEME_STORAGE_KEY, themeName);
-        console.log(`Theme set to: ${themeName}`);
+    function applyAccentTheme(themeName) {
+        document.documentElement.setAttribute('data-accent-theme', themeName);
+        localStorage.setItem(ACCENT_THEME_STORAGE_KEY, themeName);
     }
 
-    function applyBgTheme(bgThemeName) {
-        document.documentElement.setAttribute('data-bg-theme', bgThemeName);
-        // Update active button state
-        const currentActive = bgThemeSwitcher.querySelector('.theme-button.active');
-        if (currentActive) {
-            currentActive.classList.remove('active');
-        }
-        const newActive = bgThemeSwitcher.querySelector(`.theme-button[data-bg-theme="${bgThemeName}"]`);
-        if (newActive) {
-            newActive.classList.add('active');
-        }
-        localStorage.setItem(BG_THEME_STORAGE_KEY, bgThemeName);
-        console.log(`Background Theme set to: ${bgThemeName}`);
+    function applyBgTheme(themeName) {
+        document.documentElement.setAttribute('data-bg-theme', themeName);
+        localStorage.setItem(BG_THEME_STORAGE_KEY, themeName);
     }
 
-    accentThemeSwitcher.addEventListener('click', (event) => {
-        if (event.target.classList.contains('theme-button')) {
-            const theme = event.target.dataset.theme;
-            if (theme) {
-                applyTheme(theme);
+    // If accent theme switcher exists, add listeners
+    if (accentThemeSwitcher) {
+        accentThemeSwitcher.addEventListener('click', (event) => {
+            if (event.target.classList.contains('theme-button')) {
+                const newTheme = event.target.getAttribute('data-theme');
+                applyAccentTheme(newTheme);
             }
-        }
-    });
+        });
+    }
 
-    bgThemeSwitcher.addEventListener('click', (event) => {
-        if (event.target.classList.contains('theme-button')) {
-            const bgTheme = event.target.dataset.bgTheme;
-            if (bgTheme) {
-                applyBgTheme(bgTheme);
+    // If background theme switcher exists, add listeners
+    if (bgThemeSwitcher) {
+        bgThemeSwitcher.addEventListener('click', (event) => {
+            if (event.target.classList.contains('theme-button')) {
+                const newBgTheme = event.target.getAttribute('data-bg-theme');
+                applyBgTheme(newBgTheme);
             }
-        }
-    });
+        });
+    }
 
-    // Apply saved theme on load or default
-    const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || 'default'; 
-    applyTheme(savedTheme);
+    // Initial Load: Apply saved themes (check if elements exist before applying)
+    const savedAccentTheme = localStorage.getItem(ACCENT_THEME_STORAGE_KEY) || 'default';
+    applyAccentTheme(savedAccentTheme);
 
-    // Apply saved background theme on load or default
     const savedBgTheme = localStorage.getItem(BG_THEME_STORAGE_KEY) || 'default';
     applyBgTheme(savedBgTheme);
 
