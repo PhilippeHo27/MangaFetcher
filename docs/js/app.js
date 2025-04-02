@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const timestamp = new Date().getTime();
         try {
             // Assuming chapters file is correctly placed relative to docs/index.html
-            const response = await fetch(`../data/manga_chapters.json?v=${timestamp}`);
+            const response = await fetch(`data/manga_chapters.json?v=${timestamp}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
