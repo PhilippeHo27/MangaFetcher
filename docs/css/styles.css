@@ -203,7 +203,7 @@ main {
      overflow-x: auto; /* Allows table to be scrolled horizontally if needed */
      margin-top: 0.5rem; /* Reduced margin to close the gap */
      background-color: var(--table-bg-color);
-     padding: 1rem;
+     padding: 0; /* Remove padding to eliminate extra space */
      border-radius: var(--border-radius);
      box-shadow: var(--shadow-light);
  }
@@ -212,6 +212,7 @@ main {
      width: 100%;
      border-collapse: collapse;
      background-color: var(--table-bg-color);
+     margin: 0; /* Remove margin to eliminate extra space */
  }
 
  table#manga-table th,
@@ -223,10 +224,11 @@ main {
  }
 
  table#manga-table th {
-     background-color: var(--table-header-bg-color);
-     color: var(--text-color-dark);
-     font-weight: bold; /* Make headers bold */
-     font-size: 1.1em; /* Increase header font size */
+    background-color: var(--table-header-bg-color);
+    color: var(--text-color-dark);
+    font-weight: bold; /* Make headers bold */
+    font-size: 1.1em; /* Increase header font size */
+    padding: 1rem; /* Ensure consistent padding in header */
  }
 
  /* Manga Name Styling */
