@@ -370,13 +370,14 @@ main {
  }
 
  .theme-button {
-     width: 20px;
-     height: 20px;
+     width: 25px; /* Increased size */
+     height: 25px; /* Increased size */
      border: var(--border-width) solid var(--border-color);
      cursor: pointer;
      padding: 0;
      box-shadow: 1px 1px 0px var(--border-color);
      transition: transform 0.1s ease, box-shadow 0.1s ease;
+     position: relative; /* For active indicator */
  }
 
  .theme-button:hover {
@@ -389,13 +390,18 @@ main {
      box-shadow: none;
  }
 
- /* Style active button with border matching its own background */
- .theme-button.active {
-     border-width: 3px; /* Thicker border */
-     /* We use inline style for background, so can't use var() easily here */
-     /* A simple outline might be better for contrast */
-     outline: 2px solid var(--primary-color);
-     outline-offset: -4px;
+ /* Active theme indicator */
+ .theme-button.active::after {
+     content: "";
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     transform: translate(-50%, -50%);
+     width: 8px;
+     height: 8px;
+     background-color: var(--primary-color);
+     border-radius: 50%;
+     border: 1px solid white;
  }
 
  #tracked-manga-section .tracked-manga-header {

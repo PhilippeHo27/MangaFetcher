@@ -444,11 +444,41 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyAccentTheme(themeName) {
         document.documentElement.setAttribute('data-accent-theme', themeName);
         localStorage.setItem(ACCENT_THEME_STORAGE_KEY, themeName);
+        
+        // Update active button state if the switcher exists
+        if (accentThemeSwitcher) {
+            // Remove active class from all buttons
+            const buttons = accentThemeSwitcher.querySelectorAll('.theme-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to the selected button
+            const activeButton = accentThemeSwitcher.querySelector(`.theme-button[data-theme="${themeName}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+        }
+        
+        console.log(`Accent theme set to: ${themeName}`);
     }
 
     function applyBgTheme(themeName) {
         document.documentElement.setAttribute('data-bg-theme', themeName);
         localStorage.setItem(BG_THEME_STORAGE_KEY, themeName);
+        
+        // Update active button state if the switcher exists
+        if (bgThemeSwitcher) {
+            // Remove active class from all buttons
+            const buttons = bgThemeSwitcher.querySelectorAll('.theme-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to the selected button
+            const activeButton = bgThemeSwitcher.querySelector(`.theme-button[data-bg-theme="${themeName}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+        }
+        
+        console.log(`Background theme set to: ${themeName}`);
     }
 
     // If accent theme switcher exists, add listeners
@@ -456,7 +486,9 @@ document.addEventListener('DOMContentLoaded', () => {
         accentThemeSwitcher.addEventListener('click', (event) => {
             if (event.target.classList.contains('theme-button')) {
                 const newTheme = event.target.getAttribute('data-theme');
-                applyAccentTheme(newTheme);
+                if (newTheme) {
+                    applyAccentTheme(newTheme);
+                }
             }
         });
     }
@@ -466,7 +498,9 @@ document.addEventListener('DOMContentLoaded', () => {
         bgThemeSwitcher.addEventListener('click', (event) => {
             if (event.target.classList.contains('theme-button')) {
                 const newBgTheme = event.target.getAttribute('data-bg-theme');
-                applyBgTheme(newBgTheme);
+                if (newBgTheme) {
+                    applyBgTheme(newBgTheme);
+                }
             }
         });
     }
