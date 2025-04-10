@@ -6,7 +6,7 @@ on:
     - cron: '0 2 * * *'
   push:
     paths:
-      - 'data/pending_changes.json' # Trigger on changes to pending file
+      - 'docs/data/pending_changes.json' # Trigger on changes to pending file
   workflow_dispatch: # Allows manual triggering
 
 jobs:
@@ -38,7 +38,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'Automated daily manga chapter update'
-          file_pattern: 'data/manga_chapters.json' # Only commit chapter data
+          file_pattern: 'docs/data/manga_chapters.json' # Only commit chapter data
           commit_user_name: GitHub Actions Bot
           commit_user_email: actions@github.com
           commit_author: GitHub Actions Bot <actions@github.com>
@@ -77,7 +77,7 @@ jobs:
         with:
           commit_message: 'Process pending manga additions'
           # Commit changes to sources, chapters, and the (now empty) pending file
-          file_pattern: 'data/manga_sources.json data/manga_chapters.json data/pending_changes.json'
+          file_pattern: 'docs/data/manga_sources.json docs/data/manga_chapters.json docs/data/pending_changes.json'
           commit_user_name: GitHub Actions Bot
           commit_user_email: actions@github.com
           commit_author: GitHub Actions Bot <actions@github.com>

@@ -442,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const BG_THEME_STORAGE_KEY = 'mangaFetcherBgTheme'; // Separate key for background
 
     function applyAccentTheme(themeName) {
-        document.documentElement.setAttribute('data-accent-theme', themeName);
+        document.documentElement.setAttribute('data-theme', themeName);
         localStorage.setItem(ACCENT_THEME_STORAGE_KEY, themeName);
         
         // Update active button state if the switcher exists

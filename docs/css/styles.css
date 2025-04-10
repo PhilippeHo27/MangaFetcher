@@ -201,7 +201,7 @@ main {
  .table-container {
      border: var(--border-width) solid var(--primary-color);
      overflow-x: auto; /* Allows table to be scrolled horizontally if needed */
-     margin-top: 1rem;
+     margin-top: 0.5rem; /* Reduced margin to close the gap */
      background-color: var(--table-bg-color);
      padding: 1rem;
      border-radius: var(--border-radius);
@@ -409,6 +409,8 @@ main {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem; /* Reduced margin */
+    border-bottom: var(--border-width) solid var(--border-color);
+    padding-bottom: 0.5rem;
 }
 
 .tracked-manga-actions {

@@ -16,7 +16,7 @@ except ImportError as e:
     sys.exit(1)
 
 # Define paths relative to the script location (backend)
-data_dir = os.path.join(backend_dir, '..', 'data')
+data_dir = os.path.join(backend_dir, '..', 'docs', 'data')
 pending_file_path = os.path.join(data_dir, 'pending_changes.json')
 
 def process_pending_changes():
