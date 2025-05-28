@@ -3,9 +3,9 @@
     "id": "Chainsaw Man",
     "name": "Chainsaw Man",
     "source_url": "https://readchainsaw-man.com/",
-    "latest_chapter_text": "Chainsaw Man, Chapter 204",
-    "latest_chapter_url": "https://readchainsaw-man.com/manga/chainsaw-man-chapter-204/",
-    "last_scraped_at": "2025-05-27T03:08:57.233838"
+    "latest_chapter_text": "Chainsaw Man Chapter 204",
+    "latest_chapter_url": "https://readchainsaw-man.com/manga/chainsaw-man-chapter-204-2/",
+    "last_scraped_at": "2025-05-28T03:11:23.953505"
   },
   {
     "id": "Dandadan",
@@ -13,7 +13,7 @@
     "source_url": "https://www.dandadanchapters.com/",
     "latest_chapter_text": "Unknown",
     "latest_chapter_url": null,
-    "last_scraped_at": "2025-05-27T03:08:57.849365"
+    "last_scraped_at": "2025-05-28T03:11:24.848248"
   },
   {
     "id": "Kagurabachi",
@@ -21,7 +21,7 @@
     "source_url": "https://readkagura.com/",
     "latest_chapter_text": "Kagurabachi, Chapter 80",
     "latest_chapter_url": "https://readkagura.com/manga/kagurabachi-chapter-80/",
-    "last_scraped_at": "2025-05-27T03:08:59.242303"
+    "last_scraped_at": "2025-05-28T03:11:25.886489"
   },
   {
     "id": "Sakamoto Days",
@@ -29,7 +29,7 @@
     "source_url": "https://www.sakamotodayschapters.com/",
     "latest_chapter_text": "Unknown",
     "latest_chapter_url": null,
-    "last_scraped_at": "2025-05-27T03:08:59.678304"
+    "last_scraped_at": "2025-05-28T03:11:26.050975"
   },
   {
     "id": "One Punch Man",
@@ -37,7 +37,7 @@
     "source_url": "https://readonepunch-man.com/",
     "latest_chapter_text": "One Punch Man Chapter 211",
     "latest_chapter_url": "https://readonepunch-man.com/one-punch-man-chapter-211/",
-    "last_scraped_at": "2025-05-27T03:09:00.983513"
+    "last_scraped_at": "2025-05-28T03:11:26.974956"
   },
   {
     "id": "Eleceed",
@@ -45,6 +45,6 @@
     "source_url": "https://www.toongod.org/webtoon/eleceed-manhwa/",
     "latest_chapter_text": "Error",
     "latest_chapter_url": null,
-    "last_scraped_at": "2025-05-27T03:09:02.069836"
+    "last_scraped_at": "2025-05-28T03:11:28.108695"
   }
 ]
