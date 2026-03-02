@@ -5,7 +5,7 @@
     "source_url": "https://readchainsaw-man.com/",
     "latest_chapter_text": "Unknown",
     "latest_chapter_url": null,
-    "last_scraped_at": "2026-03-01T04:20:47.231392"
+    "last_scraped_at": "2026-03-02T04:11:55.206743"
   },
   {
     "id": "Dandadan",
@@ -13,15 +13,15 @@
     "source_url": "https://www.dandadanchapters.com/",
     "latest_chapter_text": "Unknown",
     "latest_chapter_url": null,
-    "last_scraped_at": "2026-03-01T04:20:47.770436"
+    "last_scraped_at": "2026-03-02T04:11:55.666206"
   },
   {
     "id": "Kagurabachi",
     "name": "Kagurabachi",
     "source_url": "https://readkagura.com/",
-    "latest_chapter_text": "Kagurabachi, Chapter 112.5",
-    "latest_chapter_url": "https://readkagura.com/manga/kagurabachi-chapter-112-5/",
-    "last_scraped_at": "2026-03-01T04:20:47.942014"
+    "latest_chapter_text": "Kagurabachi, Chapter 113",
+    "latest_chapter_url": "https://readkagura.com/manga/kagurabachi-chapter-113/",
+    "last_scraped_at": "2026-03-02T04:11:55.807269"
   },
   {
     "id": "Sakamoto Days",
@@ -29,7 +29,7 @@
     "source_url": "https://www.sakamotodayschapters.com/",
     "latest_chapter_text": "Unknown",
     "latest_chapter_url": null,
-    "last_scraped_at": "2026-03-01T04:20:48.200465"
+    "last_scraped_at": "2026-03-02T04:11:55.988735"
   },
   {
     "id": "One Punch Man",
@@ -37,7 +37,7 @@
     "source_url": "https://readonepunch-man.com/",
     "latest_chapter_text": "Error",
     "latest_chapter_url": null,
-    "last_scraped_at": "2026-03-01T04:20:48.314513"
+    "last_scraped_at": "2026-03-02T04:11:56.213086"
   },
   {
     "id": "Eleceed",
@@ -45,6 +45,6 @@
     "source_url": "https://www.toongod.org/webtoon/eleceed-manhwa/",
     "latest_chapter_text": "Error",
     "latest_chapter_url": null,
-    "last_scraped_at": "2026-03-01T04:20:48.988995"
+    "last_scraped_at": "2026-03-02T04:11:56.822767"
   }
 ]
